@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AutoCut Balonmano - Lanzamientos y 7m</title>
+<style>
+:root{--bg:#0a0c10;--panel:#12151c;--line:#242933;--text:#f0f2f5;--muted:#8a92a2;--accent:#4dabf7;--good:#51cf66;--warn:#fcc419;--danger:#ff6b6b;--radius:12px;--shadow:0 4px 20px rgba(0,0,0,0.4)}
+*{box-sizing:border-box}[hidden]{display:none!important}body{margin:0;background:var(--bg);color:var(--text);font:14px 'Inter',system-ui,-apple-system,sans-serif;line-height:1.5}
+header{padding:20px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--panel)}h1{font-size:22px;margin:0;font-weight:700;letter-spacing:-0.5px}.tag{color:var(--muted);font-size:12px;background:var(--line);padding:4px 10px;border-radius:20px}
+main{display:grid;grid-template-columns:minmax(600px,1fr) 420px;gap:20px;padding:20px;height:calc(100vh - 85px)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow)}.viewer{display:flex;flex-direction:column;min-height:0}.videoWrap{position:relative;background:#000;flex:1;display:flex;align-items:center;justify-content:center;min-height:400px;border-radius:var(--radius);overflow:hidden;margin:10px}.videoWrap video{max-width:100%;max-height:100%;width:100%;height:100%;object-fit:contain}.hud{position:absolute;left:16px;top:16px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);padding:8px 12px;border-radius:8px;font-size:12px;color:var(--text);border:1px solid rgba(255,255,255,0.1)}.bar{padding:20px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;border-top:1px solid var(--line);background:rgba(0,0,0,0.2)}
+button,input,select{font:inherit;transition:all 0.2s ease}button{background:#1d222d;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:10px 16px;cursor:pointer;font-weight:500}button:hover{background:#2b3240;border-color:var(--muted)}button.primary{background:var(--accent);border-color:var(--accent);color:#fff}button.primary:hover{filter:brightness(1.1)}button.good{background:var(--good);border-color:var(--good);color:#000}button.danger{background:var(--danger);border-color:var(--danger);color:#fff}button:disabled{opacity:.4;cursor:not-allowed}
+input[type=file]{max-width:260px;background:var(--bg);border:1px dashed var(--line);padding:6px;border-radius:8px}input[type=text],input[type=number],select{background:var(--bg);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 12px;min-width:0}
+.range{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}.range2{display:grid;grid-template-columns:80px 1fr 50px;gap:12px;align-items:center;margin:10px 0}.range2 b{text-align:right;font-variant-numeric:tabular-nums}
+.side{display:flex;flex-direction:column;min-height:0}.sideBody{padding:20px;overflow:auto}.section{padding-bottom:20px;margin-bottom:20px;border-bottom:1px solid var(--line)}.section:last-child{border:0}.section h2,details.section>summary{font-size:15px;margin:0 0 12px;font-weight:600;display:flex;align-items:center;gap:8px}details.section>summary{cursor:pointer;user-select:none}.hint{color:var(--muted);font-size:12px;line-height:1.6;margin-top:4px}
+.metric{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.05)}.metric b{font-variant-numeric:tabular-nums;color:var(--accent)}
+.candidate{border:1px solid var(--line);border-radius:10px;padding:14px;margin:10px 0;background:rgba(255,255,255,0.02);transition:all 0.2s ease}.candidate:hover{background:rgba(255,255,255,0.05);border-color:var(--muted)}.candidate.playing{box-shadow:0 0 0 2px var(--accent);background:rgba(101,171,247,0.1)}.candidate .top{display:flex;justify-content:space-between;align-items:center;gap:10px}.candidate .name{flex:1;background:transparent;border:1px solid transparent;font-weight:600;padding:4px 8px;border-radius:6px;color:var(--text)}.candidate .name:hover,.candidate .name:focus{border-color:var(--line);background:var(--bg);outline:none}.candidate .meta{color:var(--muted);font-size:12px;margin:6px 0 10px}.candidate .pick{display:grid;grid-template-columns:1fr 1fr;gap:10px}.candidate .actions,.candidate .adj{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap;align-items:center}.candidate .adj span{color:var(--muted);font-size:12px;width:45px}.candidate button{padding:6px 10px;font-size:12px}
+.confidence{height:6px;background:var(--line);border-radius:3px;overflow:hidden;margin-top:10px}.confidence i{display:block;height:100%;width:0;background:var(--good);transition:width 0.3s ease}
+.timeline{height:54px;border-top:1px solid var(--line);position:relative;background:rgba(0,0,0,0.3);overflow:hidden;cursor:pointer}.seg{position:absolute;top:10px;height:34px;border-radius:6px;opacity:.6;border:1px solid rgba(255,255,255,0.2);transition:opacity 0.2s}.seg:hover{opacity:1}.mark{position:absolute;top:3px;width:2px;height:48px;background:var(--warn);cursor:pointer}.playhead{position:absolute;top:0;width:2px;height:54px;background:var(--accent);pointer-events:none}
+.legend{display:flex;gap:12px;color:var(--muted);font-size:11px}.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--warn);margin-right:6px}.status{font-size:12px;color:var(--muted);min-height:18px}
+.team{display:flex;gap:10px;align-items:center;margin:10px 0}.team input[type=text]{flex:1}.team button{padding:8px 12px;font-size:12px}.sw{width:24px;height:24px;border-radius:6px;border:1px solid var(--line);flex:none;background:repeating-linear-gradient(45deg,var(--panel) 0 4px,var(--bg) 4px 8px)}
+.pickLayer{position:absolute;inset:0;cursor:crosshair;z-index:5;display:flex;justify-content:center;align-items:flex-start}.pickLayer span{margin-top:20px;background:rgba(0,0,0,0.8);backdrop-filter:blur(8px);border:1px solid var(--accent);padding:12px 20px;border-radius:12px;font-size:14px;color:var(--text);box-shadow:0 10px 30px rgba(0,0,0,0.5)}
+.catRow{display:flex;align-items:center;gap:10px;padding:6px 0;cursor:pointer}.catRow em{color:var(--muted);font-style:normal;font-size:12px;flex:1}.catRow span{flex:none;font-weight:500}.catRow button{padding:4px 8px;font-size:11px;margin-left:auto}
+.row{display:flex;gap:10px;margin:12px 0;align-items:center}.row input[type=text]{flex:1}.row label{flex:1}
+#prev{width:100%;border-radius:var(--radius);border:1px solid var(--line);margin-top:12px;background:#000}
+.chk{display:flex;gap:10px;align-items:center;margin:12px 0}small{color:var(--muted);font-weight:400}
+.videoWrap{overflow:hidden}.videoWrap:fullscreen{width:100vw;height:100vh}.videoWrap video{transform-origin:center center}
+.vbar{position:absolute;left:0;right:0;bottom:0;display:flex;gap:10px;align-items:center;padding:16px;background:linear-gradient(transparent,rgba(0,0,0,0.8));z-index:4}.vbar button,.vbar select{padding:6px 12px;font-size:12px;background:rgba(34,39,51,0.8);backdrop-filter:blur(4px)}.vbar #vSeek{flex:1;min-width:60px}.vbar .zl{display:flex;align-items:center;gap:6px;font-size:12px}.vbar .zl input{width:64px}.vbar span{font-size:12px;font-variant-numeric:tabular-nums}
+.teamCols.one{grid-template-columns:1fr}
+main.side1{grid-template-columns:minmax(300px,1fr) 300px}main.side2{grid-template-columns:1fr}main.side2 aside{display:none}
+.wmark{position:absolute;bottom:2px;width:2px;height:12px;background:var(--accent);pointer-events:none}.ballOv{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:3}
+.revBar{position:absolute;left:50%;bottom:60px;transform:translateX(-50%);display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center;background:rgba(0,0,0,0.8);backdrop-filter:blur(12px);border:1px solid var(--accent);border-radius:14px;padding:12px 16px;z-index:6;max-width:96%}.revBar button{padding:8px 12px;font-size:13px}.revBar span{font-size:13px;color:var(--muted)}
+.clipTag{position:absolute;right:16px;top:16px;background:rgba(0,0,0,0.7);backdrop-filter:blur(4px);padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;max-width:60%;border:1px solid rgba(255,255,255,0.1)}.badge{font-size:11px;color:var(--warn);white-space:nowrap}.candidate.seen{border-left:4px solid #56627a}.candidate.bookmark{box-shadow:0 0 0 2px var(--warn)}.tools select{padding:6px 10px;font-size:12px}.tools .hint{width:60px}
+main.teamwide{grid-template-columns:minmax(300px,1fr) minmax(620px,60vw)}
+.teamCols{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.teamCol h3,.noTeam h3{margin:0 0 8px;font-size:15px;position:sticky;top:-14px;background:var(--panel);padding:10px 0;z-index:2;border-bottom:1px solid var(--line)}.noTeam{margin-top:20px}.teamCol .empty{padding:12px 6px}
+@media(max-width:900px){main{grid-template-columns:1fr;height:auto}.side{min-height:500px}.videoWrap{height:55vh}}
+</style>
+</head>
+<body>
+<header><h1>AutoCut Balonmano - Lanzamientos y 7m</h1><span class="tag">Versión Simplificada · Solo Lanzamientos y 7 Metros</span></header>
+<main id="mainGrid">
+<section class="panel viewer">
+ <div class="videoWrap" id="videoWrap"><video id="video" playsinline></video><div class="hud" id="hud">Sin vídeo</div><div class="clipTag" id="clipTag" hidden></div>
+  <div class="pickLayer" id="pickLayer" hidden><span id="pickMsg"></span></div>
+  <canvas class="ballOv" id="ballOv" hidden></canvas>
+  <div class="revBar" id="revBar" hidden><span id="revInfo"></span><button data-r="s" class="good" title="Pulsa en el instante del lanzamiento">S · lanzamiento aquí</button><button data-r="7" class="good">7 · siete metros aquí</button><button data-r="v" class="good">V · válido como está</button><button data-r="n" class="danger">N · descartar</button><button data-r="b">B · anterior</button><button data-r="j">J · saltar</button><button data-r="x">Esc · salir</button></div>
+  <div class="vbar" id="vbar"><button id="vPlay" title="Reproducir / pausa (barra espaciadora)">▶</button><button id="vBack" title="Atrás 5 s (←)">−5</button><button id="vFwd" title="Adelante 5 s (→)">+5</button><input id="vSeek" type="range" min="0" max="1000" value="0"><span id="vTime">00:00</span><select id="vSpeed" title="Velocidad de reproducción"><option value="0.25">0,25×</option><option value="0.5">0,5×</option><option value="1" selected>1×</option><option value="1.5">1,5×</option><option value="2">2×</option></select><label class="zl" title="Zoom: rueda del ratón sobre el vídeo; arrastra para mover; doble clic para restablecer">🔍<input id="vZoom" type="range" min="1" max="4" step="0.25" value="1"></label><button id="vPanel" title="Ancho del panel derecho: normal, estrecho u oculto">◧</button><button id="vFull" title="Pantalla completa (F)">⛶</button></div></div>
+ <div class="timeline" id="timeline"><div class="playhead" id="playhead"></div></div>
+ <div class="bar"><input id="file" type="file" accept="video/*" title="Elige un vídeo para activar Analizar vídeo"><button id="analyze" class="primary" disabled>Analizar vídeo</button><button id="stop" disabled>Detener</button><span class="status" id="status"></span></div>
+</section>
+<aside class="panel side"><div class="sideBody">
+ <details class="section"><summary>Motor de detección</summary><div class="hint">Simplificado para detectar únicamente lanzamientos y 7 metros. Se han ajustado los umbrales para reducir falsos positivos y capturar más lanzamientos reales.</div></details>
+ <div class="section"><h2>Sensibilidad</h2><div class="range"><input id="sens" type="range" min="1" max="10" value="5"><b id="sensVal">5</b></div><div class="hint">Más sensibilidad = más candidatos.</div>
+  <h2 style="margin-top:16px">Lanzamientos y 7 metros</h2><div class="range"><input id="sensShot" type="range" min="1" max="10" value="6"><b id="sensShotVal">6</b></div><div class="hint">Busca picos de movimiento junto a las porterías. Ajustado para reducir falsos.</div>
+  <div class="range" style="margin-top:10px"><input id="sensQ7" type="range" min="1" max="10" value="5"><b id="sensQ7Val">5</b></div><div class="hint">Exigencia de 7 m: más alto = más estricto con la calma previa.</div>
+  <label class="chk"><input id="auto7" type="checkbox"> Marcar 7 m automáticamente</label>
+  <label class="hint" style="display:block;margin-top:10px">Tipo de cámara<br><select id="camMode" style="width:100%"><option value="auto">Automático</option><option value="fixed">Fija (plano general de la pista)</option><option value="track">Sigue el juego (se mueve)</option></select></label><div class="hint" id="camInfo"></div></div>
+
+ <details class="section" open><summary>Ventana del corte</summary>
+  <div class="hint">Configuración automática basada en tus ajustes previos.</div>
+  <div class="hint">El corte empieza «Antes» segundos antes de que arranque la jugada detectada y termina «Después» segundos tras acabar el movimiento.</div>
+ </details>
+
+ <details class="section" open><summary>Equipos (color de camiseta)</summary>
+  <div class="team"><span class="sw" id="swA"></span><input id="nameA" type="text" value="Equipo A"><button id="pickA">Elegir color</button><button id="clrA" title="Quitar color">✕</button></div>
+  <div class="team"><span class="sw" id="swB"></span><input id="nameB" type="text" value="Equipo B"><button id="pickB">Elegir color</button><button id="clrB" title="Quitar color">✕</button></div>
+  <div class="range"><input id="tol" type="range" min="8" max="70" value="34"><b id="tolVal">34</b></div>
+  <div class="hint">Pausa el vídeo, pulsa «Elegir color» y haz clic sobre el pecho de un jugador.</div>
+  <label class="chk"><input id="prevOn" type="checkbox"> Ver qué píxeles detecta</label>
+  <canvas id="prev" width="320" height="180" hidden></canvas>
+ </details>
+
+ <details class="section" open><summary>Qué cortar</summary>
+  <div id="catList"></div>
+  <div class="row"><label>Equipo a cortar<br><select id="teamFilter" style="width:100%"><option value="both">Ambos equipos</option><option value="A">Equipo A</option><option value="B">Equipo B</option></select></label></div>
+  <label class="chk"><input id="showUnk" type="checkbox" checked> <span id="unkLbl">Incluir cortes sin equipo claro</span></label>
+  <div class="hint" style="margin-top:10px"><b>Filtro de falsos</b> (saques de centro, fuera de banda…)</div>
+  <div class="range"><input id="doubt" type="range" min="0" max="10" value="5"><b id="doubtVal">5</b></div>
+  <label class="chk"><input id="showDoubt" type="checkbox"> Mostrar también los dudosos</label>
+  <div class="hint">Un corte es «dudoso» si se parece a los que has descartados.</div>
+ </details>
+
+ <details class="section" open><summary>Señales extra: audio y balón (experimental)</summary>
+  <div class="hint">Se calculan para ayudar a la validación manual.</div>
+  <div class="hint" style="margin-top:10px"><b>Audio</b> (silbatos y reacción del ambiente)</div>
+  <div class="tools"><span class="hint" style="width:auto">Del min</span><input id="audioFrom" type="number" min="0" step="1" value="0" style="width:62px"><span class="hint" style="width:auto">al min</span><input id="audioTo" type="number" min="1" step="1" value="15" style="width:62px"></div>
+  <div class="tools"><select id="audioRate" title="Velocidad del análisis"><option value="4">a 4× (más rápido)</option><option value="2">a 2×</option><option value="1">a 1× (más seguro)</option></select><button id="audioBtn" title="Reproduce el partido sin sonido y mide el audio">🔊 Analizar audio</button></div>
+  <div class="hint" id="audioInfo"></div>
+  <label class="chk"><input id="showWhistle" type="checkbox" checked> Marcar los silbatos en la línea de tiempo (azul)</label>
+  <div class="hint" style="margin-top:10px"><b>Balón</b> (detector de objetos en el navegador)</div>
+  <div class="tools"><button id="ballTest" title="Detecta personas y balón en el fotograma que tienes en pantalla">🏐 Probar en este fotograma</button></div>
+  <div class="tools"><select id="ballN" title="Cuántos cortes analizar"><option value="10">10 primeros cortes</option><option value="30">30 primeros cortes</option><option value="9999">todos los cortes</option></select><button id="ballBtn" title="Busca el balón en cada corte del equipo elegido en «Ver»">🏐 Buscar balón en los cortes</button></div>
+  <div class="tools"><button id="sigBtn" title="Compara audio y balón con tus cortes validados y descartados">📊 Comprobar si ayudan</button></div>
+  <div class="hint" id="signalInfo" style="white-space:pre-line"></div>
+  <div class="hint" id="ballInfo"></div>
+ </details>
+ <div class="section"><h2>Lectura actual</h2><div class="metric"><span>Movimiento</span><b id="motion">—</b></div><div class="metric"><span>Estabilidad</span><b id="stable">—</b></div><div class="metric"><span>Tiempo</span><b id="time">00:00</b></div></div>
+
+ <div class="section"><h2>Acciones propuestas <small id="count"></small></h2><div class="legend"><span><i class="dot"></i>candidato</span></div><div class="hint" id="diag" style="margin:6px 0"></div>
+  <div class="tools"><button id="viewMode" class="primary" title="Separa los cortes en dos columnas, una por equipo, ordenados por nombre">Vista por equipos</button></div>
+  <div class="tools"><span class="hint">Ver</span><select id="seqTeam" title="Equipo que quieres ver"><option value="both">Ambos equipos</option><option value="A">Equipo A</option><option value="B">Equipo B</option></select><button id="playAll" title="Reproduce los cortes seguidos; si ya viste algunos, continúa desde el último que visionaste">▶ Ver en secuencia</button><button id="revStart" class="primary" title="Repasa los cortes pendientes con una ventana amplia y decide con una tecla (S = el lanzamiento es ahora)">⚡ Revisión rápida</button><button id="seqReset" title="Empieza de nuevo y borra las marcas de «visto» de ese equipo">↺ Desde el principio</button></div>
+  <div class="tools"><span class="hint">Descargar</span><select id="dlTeam" title="Equipo que quieres descargar"><option value="both">Ambos equipos</option><option value="A">Equipo A</option><option value="B">Equipo B</option></select><button id="dlAll" title="Graba todos los cortes del equipo elegido, uno detrás de otro, en un solo vídeo">⬇ Guardar secuencia</button><select id="nameCorner" title="Esquina donde aparece el nombre del corte en el vídeo guardado"><option value="tl">Nombre ↖</option><option value="tr">Nombre ↗</option><option value="bl">Nombre ↙</option><option value="br">Nombre ↘</option><option value="none">Sin nombre</option></select><button id="csv" title="Lista de los cortes del equipo elegido">Lista (CSV)</button></div>
+  <div class="hint" style="margin:-2px 0 8px">«Guardar secuencia» graba en tiempo real un único vídeo con los cortes seguidos.</div>
+  <div class="tools"><button id="respike" title="Vuelve a buscar lanzamientos y 7 m usando lo que has corregido">Recalcular lanzamientos</button><button id="reclass" title="Vuelve a clasificar usando tus correcciones anteriores">Reclasificar</button><button id="resetFilters" title="Muestra todos los cortes: todas las categorías, ambos equipos y los sin equipo">Quitar filtros</button></div>
+  <div id="candidates"><div class="empty">Carga un vídeo y pulsa «Analizar vídeo».</div></div>
+
+ <div class="section"><h2>Aprendizaje del entrenador</h2><div class="hint">Las correcciones se guardan y se usan para mejorar la detección.</div><div style="margin-top:10px"><button id="export">Exportar aprendizaje</button> <button id="import">Importar aprendizaje</button><input id="importFile" type="file" accept=".json,application/json" hidden> <button id="resetLearn" class="danger" title="Borra lo aprendido de tus correcciones">Borrar lo aprendido</button></div><div class="hint" id="storeWarn" hidden style="color:var(--warn);margin-top:8px">Este navegador no guarda datos entre sesiones: exporta el aprendizaje antes de cerrar.</div></div>
+ </div></aside>
+</main>
+<script>
+const _ghost={};const $=id=>document.getElementById(id)||(_ghost[id]||(_ghost[id]=document.createElement('input')));/* controles quitados de la versión simplificada: elemento inerte para que el script no se detenga */
+const video=$('video'), file=$('file'), analyze=$('analyze'), stop=$('stop'), statusEl=$('status');
+const canvas=document.createElement('canvas'), ctx=canvas.getContext('2d',{willReadFrequently:true});
+const small=document.createElement('canvas'), sctx=small.getContext('2d',{willReadFrequently:true});
+const tcv=document.createElement('canvas'), tctx=tcv.getContext('2d',{willReadFrequently:true}); tcv.width=256; tcv.height=144;
+const pcv=$('prev'), pctx=pcv.getContext('2d',{willReadFrequently:true});
+function newSeries(){return {t:[],sc:[],zl:[],zr:[],ma:[],mb:[],mall:[],gs:0,useTeams:false,q80:[],cx:[],scanFrom:0}}
+let series=newSeries();
+let SEQ={seen:{},mark:{}};
+function seqKeyStore(){return 'autocut-seq-v1:'+String(videoName).normalize('NFC').toLowerCase()}
+function loadSeq(){try{SEQ=JSON.parse(localStorage.getItem(seqKeyStore())||'null')||{seen:{},mark:{}}}catch(e){SEQ={seen:{},mark:{}}}if(!SEQ.seen)SEQ.seen={};if(!SEQ.mark)SEQ.mark={}}
+function saveSeq(){try{localStorage.setItem(seqKeyStore(),JSON.stringify(SEQ))}catch(e){}}
+function ckey(c){return String(Math.round(c.event))}
+let audioRunning=false,ballRunning=false,AUDIO=null,WHIST=[],AUD=null;
+function busy(){return running||recording||audioRunning||ballRunning}
+let url=null, running=false, recording=false, last=null, samples=[], candidates=[], uid=0, videoName='', playing=null, playingId=null, picking=null, tprev=null, renderQueued=false;
+
+function setStatus(t){statusEl.textContent=t}
+function fmt(t){t=Math.max(0,t||0);let m=Math.floor(t/60),s=Math.floor(t%60);return String(m).padStart(2,'0')+':'+String(s).padStart(2,'0')}
+function safeName(s){return String(s).replace(/[\\/:*?"<>|]+/g,'_').trim().slice(0,80)||'corte'}
+function downloadBlob(blob,name){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},2000)}
+
+/* ---------- Ajustes y aprendizaje guardados ---------- */
+const CAT_DEFAULT=[
+ {id:'lanzamiento',name:'Lanzamiento',enabled:true,builtin:true},
+ {id:'siete',name:'7 metros',enabled:true,builtin:true}];
+let S={ver:2,shot:6,q7:5,cam:'auto',useTiming:true,doubt:5,showDoubt:false,view:'time',seqTeam:'both',dlTeam:'both',nameCorner:'tl',panel:0,auto7:false,markPre:4.3,markPost:0.8,showWhistle:true,audioRate:4,ballN:10,audioFrom:0,audioTo:15,pre:5,post:3,tol:34,teamFilter:'both',showUnk:true,
+ teams:{A:{name:'Equipo A',color:null},B:{name:'Equipo B',color:null}},
+ cats:CAT_DEFAULT.map(c=>({...c}))};
+let TRAIN=[],TIMING=[],LW=null;
+try{const s=JSON.parse(localStorage.getItem('autocut-settings-v2')||'null');
+ if(s){['pre','post','tol','teamFilter','showUnk','shot','q7','cam','useTiming','doubt','showDoubt','view','seqTeam','dlTeam','nameCorner','panel','auto7','markPre','markPost','showWhistle','audioRate','ballN','audioFrom','audioTo'].forEach(k=>{if(s[k]!==undefined)S[k]=s[k]});
+  if(s.teams)['A','B'].forEach(k=>{if(s.teams[k]){S.teams[k].name=s.teams[k].name||S.teams[k].name;S.teams[k].color=Array.isArray(s.teams[k].color)?s.teams[k].color:null}});
+  if(Array.isArray(s.cats)&&s.cats.length){S.cats=S.cats.filter(c=>c.id==='lanzamiento'||c.id==='siete');}
+  if((s.ver||0)<2){S.tol=34;S.teamFilter='both';S.showUnk=true;S.cats.forEach(k=>k.enabled=true)}}}catch(e){}
+try{TRAIN=JSON.parse(localStorage.getItem('autocut-train-v2')||'[]')||[]}catch(e){TRAIN=[]}
+try{TIMING=JSON.parse(localStorage.getItem('autocut-timing-v2')||'[]')||[]}catch(e){TIMING=[]}
+function saveTiming(){try{localStorage.setItem('autocut-timing-v2',JSON.stringify(TIMING))}catch(e){}}
+function saveSettings(){try{localStorage.setItem('autocut-settings-v2',JSON.stringify(S))}catch(e){}}
+function saveTrain(){try{localStorage.setItem('autocut-train-v2',JSON.stringify(TRAIN))}catch(e){}}
+
+/* ---------- Color de camiseta (distancia en Lab) ---------- */
+const LIN=new Float32Array(256);for(let i=0;i<256;i++){const c=i/255;LIN[i]=c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4)}
+function rgbToLab(r,g,b){const R=LIN[r],G=LIN[g],B=LIN[b];
+ let x=(R*0.4124+G*0.3576+B*0.1805)*1.05211,y=R*0.2126+G*0.7152+B*0.0722,z=(R*0.0193+G*0.1192+B*0.9505)*0.91841;
+ const f=t=>t>0.008856?Math.cbrt(t):7.787*t+0.137931;x=f(x);y=f(y);z=f(z);
+ return [(116*y-16)*0.7,500*(x-y),200*(y-z)]}
+let labA=null,labB=null,tol2=S.tol*S.tol;
+function refreshLab(){labA=S.teams.A.color?rgbToLab(...S.teams.A.color):null;labB=S.teams.B.color?rgbToLab(...S.teams.B.color):null;tol2=S.tol*S.tol}
+function matchTeam(r,g,b){
+ const R=LIN[r],G=LIN[g],B=LIN[b];
+ let x=(R*0.4124+G*0.3576+B*0.1805)*1.05211,y=R*0.2126+G*0.7152+B*0.0722,z=(R*0.0193+G*0.1192+B*0.9505)*0.91841;
+ x=x>0.008856?Math.cbrt(x):7.787*x+0.137931;y=y>0.008856?Math.cbrt(y):7.787*y+0.137931;z=z>0.008856?Math.cbrt(z):7.787*z+0.137931;
+ const L=(116*y-16)*0.7,a=500*(x-y),bb=200*(y-z);let dA=1e9,dB=1e9;
+ if(labA){const p=L-labA[0],q=a-labA[1],w=bb-labA[2];dA=p*p+q*q+w*w}
+ if(labB){const p=L-labB[0],q=a-labB[1],w=bb-labB[2];dB=p*p+q*q+w*w}
+ if(dA<tol2&&dA<=dB)return 1;if(dB<tol2&&dB<dA)return 2;return 0}
+function teamStats(){
+ tctx.drawImage(video,0,0,256,144);const d=tctx.getImageData(0,0,256,144).data;let pA=0,pB=0,mA=0,mB=0,mAll=0;
+ for(let i=0;i<d.length;i+=4){
+  const moved=tprev?(Math.abs(d[i]-tprev[i])+Math.abs(d[i+1]-tprev[i+1])+Math.abs(d[i+2]-tprev[i+2])>45):false;if(moved)mAll++;
+  const m=matchTeam(d[i],d[i+1],d[i+2]);if(!m)continue;
+  if(m===1){pA++;if(moved)mA++}else{pB++;if(moved)mB++}}
+ if(!tprev)tprev=new Uint8ClampedArray(d.length);tprev.set(d);return {pA,pB,mA,mB,mAll}}
+function teamShareOf(b){if(!b.useTeams)return {share:.5,ok:false,single:null};
+ if(labA&&labB){const tot=b.mA+b.mB;return {share:tot?b.mA/tot:.5,ok:tot>=30,single:null}}
+ const k=labA?'A':'B',m=k==='A'?b.mA:b.mB;return {share:b.mAll?m/b.mAll:0,ok:b.mAll>=200&&m>=15,single:k}}
+function teamFrom(c,base){if(!c.teamOk)return '?';
+ if(c.teamSingle){const x=c.teamSingle,o=x==='A'?'B':'A';return c.teamShare>base*1.12?x:c.teamShare<base*.88?o:'?'}
+ return c.teamShare>base+0.03?'A':c.teamShare<base-0.03?'B':'?'}
+function assignTeams(){const sh=candidates.filter(c=>c.teamOk).map(c=>c.teamShare).sort((a,b)=>a-b);
+ const single=candidates.some(c=>c.teamOk&&c.teamSingle);
+ const base=sh.length>=6||single?(sh.length?sh[Math.floor(sh.length/2)]:0):.5;
+ candidates.forEach(c=>{if(!c.teamManual)c.team=teamFrom(c,base)})}
+
+function sampleColorAt(cx,cy){
+ const r=video.getBoundingClientRect(),vw=video.videoWidth,vh=video.videoHeight;if(!vw)return null;
+ const sc=Math.min(r.width/vw,r.height/vh),dw=vw*sc,dh=vh*sc,ox=r.left+(r.width-dw)/2,oy=r.top+(r.height-dh)/2;
+ const px=(cx-ox)/sc,py=(cy-oy)/sc;if(px<0||py<0||px>=vw||py>=vh)return null;
+ const cw=Math.min(vw,1280),k=cw/vw;canvas.width=cw;canvas.height=Math.round(vh*k);ctx.drawImage(video,0,0,canvas.width,canvas.height);
+ const x=Math.round(px*k),y=Math.round(py*k),R=4,x0=Math.max(0,x-R),y0=Math.max(0,y-R),x1=Math.min(canvas.width,x+R+1),y1=Math.min(canvas.height,y+R+1);
+ const d=ctx.getImageData(x0,y0,x1-x0,y1-y0).data,rs=[],gs=[],bs=[];
+ for(let i=0;i<d.length;i+=4){rs.push(d[i]);gs.push(d[i+1]);bs.push(d[i+2])}
+ const med=a=>{a.sort((p,q)=>p-q);return a[Math.floor(a.length/2)]};return [med(rs),med(gs),med(bs)]}
+function startPick(k){if(busy()){setStatus('Espera a que termine la tarea en curso');return}
+ if(!video.videoWidth){setStatus('Carga un vídeo primero');return}
+ video.pause();picking=k;$('pickLayer').hidden=false;$('pickMsg').textContent='Haz clic sobre la camiseta de «'+S.teams[k].name+'» (Esc para cancelar)'}
+function endPick(){picking=null;$('pickLayer').hidden=true}
+$('pickLayer').onclick=e=>{if(!picking)return;const col=sampleColorAt(e.clientX,e.clientY);if(!col)return;
+ S.teams[picking].color=col;endPick();refreshLab();saveSettings();renderTeams();drawPreview();
+ setStatus(candidates.length?'Color guardado · vuelve a analizar para reasignar equipos':'Color guardado')};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&picking)endPick()});
+$('pickA').onclick=()=>startPick('A');$('pickB').onclick=()=>startPick('B');
+['A','B'].forEach(k=>{
+ $('clr'+k).onclick=()=>{S.teams[k].color=null;refreshLab();saveSettings();renderTeams();drawPreview()};
+ $('name'+k).onchange=e=>{S.teams[k].name=e.target.value.trim()||('Equipo '+k);saveSettings();renderTeams();renderCandidates()}});
+$('tol').oninput=e=>{S.tol=+e.target.value;$('tolVal').textContent=S.tol;refreshLab();saveSettings();drawPreview()};
+$('prevOn').onchange=()=>{if($('prevOn').checked)drawPreview();else pcv.hidden=true};
+function drawPreview(){if(!$('prevOn').checked||running||!video.videoWidth)return;
+ pcv.hidden=false;pctx.drawImage(video,0,0,320,180);const im=pctx.getImageData(0,0,320,180),d=im.data;
+ for(let i=0;i<d.length;i+=4){const m=matchTeam(d[i],d[i+1],d[i+2]);
+  if(m===1){d[i]=0;d[i+1]=220;d[i+2]=255}else if(m===2){d[i]=255;d[i+1]=60;d[i+2]=200}else{d[i]*=.35;d[i+1]*=.35;d[i+2]*=.35}}
+ pctx.putImageData(im,0,0)}
+['seeked','pause','loadeddata'].forEach(ev=>video.addEventListener(ev,drawPreview));
+function renderTeams(){['A','B'].forEach(k=>{const t=S.teams[k],sw=$('sw'+k);sw.style.background=t.color?'rgb('+t.color.join(',')+')':'';sw.title=t.color?'RGB '+t.color.join(', '):'Sin color elegido';$('name'+k).value=t.name});
+ $('showUnk').checked=S.showUnk;refreshTeamFilter()}
+function refreshTeamFilter(){const tf=$('teamFilter'),n=t=>candidates.filter(c=>c.team===t&&c.status!=='rejected').length,has=candidates.length>0;
+ tf.options[1].textContent=S.teams.A.name+(has?' ('+n('A')+')':'');tf.options[2].textContent=S.teams.B.name+(has?' ('+n('B')+')':'');tf.value=S.teamFilter;
+ $('unkLbl').textContent='Incluir cortes sin equipo claro'+(has?' ('+n('?')+')':'');
+ ['seqTeam','dlTeam'].forEach(id=>{const s=$(id);s.options[1].textContent=S.teams.A.name+(has?' ('+n('A')+')':'');s.options[2].textContent=S.teams.B.name+(has?' ('+n('B')+')':'');s.value=S[id]})}
+function resetFilters(){S.cats.forEach(k=>k.enabled=true);S.teamFilter='both';S.showUnk=true;saveSettings();$('showUnk').checked=true;renderCandidates()}
+
+/* ---------- Visor ---------- */
+let Z={z:1,x:0,y:0},drag=null;
+function applyZoom(){const r=$('videoWrap').getBoundingClientRect(),mx=(Z.z-1)*r.width/2,my=(Z.z-1)*r.height/2;
+ Z.x=Math.max(-mx,Math.min(mx,Z.x));Z.y=Math.max(-my,Math.min(my,Z.y));if(Z.z===1){Z.x=0;Z.y=0}
+ video.style.transform=Z.z===1?'':'translate('+Z.x+'px,'+Z.y+'px) scale('+Z.z+')';$('vZoom').value=Z.z}
+function setZoom(z,cx,cy){z=Math.max(1,Math.min(4,z));const w=$('videoWrap').getBoundingClientRect(),px=cx===undefined?0:cx-(w.left+w.width/2),py=cy===undefined?0:cy-(w.top+w.height/2),k=z/Z.z;
+ Z.x=px-(px-Z.x)*k;Z.y=py-(py-Z.y)*k;Z.z=z;applyZoom()}
+function togglePlay(){if(picking||!video.duration)return;if(video.paused)video.play();else video.pause()}
+$('vZoom').oninput=e=>setZoom(+e.target.value);
+$('videoWrap').addEventListener('wheel',e=>{if(e.target.closest&&e.target.closest('.vbar'))return;e.preventDefault();setZoom(Z.z+(e.deltaY<0?0.25:-0.25),e.clientX,e.clientY)},{passive:false});
+video.addEventListener('dblclick',()=>{Z={z:1,x:0,y:0};applyZoom()});
+video.addEventListener('pointerdown',e=>{drag={x:e.clientX,y:e.clientY,sx:Z.x,sy:Z.y,moved:false};if(video.setPointerCapture)video.setPointerCapture(e.pointerId)});
+video.addEventListener('pointermove',e=>{if(!drag)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.abs(dx)+Math.abs(dy)>4)drag.moved=true;if(drag.moved&&Z.z>1){Z.x=drag.sx+dx;Z.y=drag.sy+dy;applyZoom()}});
+video.addEventListener('pointerup',()=>{if(drag&&!drag.moved)togglePlay();drag=null});
+$('vPlay').onclick=togglePlay;
+$('vBack').onclick=()=>{video.currentTime=Math.max(0,video.currentTime-5)};
+$('vFwd').onclick=()=>{video.currentTime=Math.min(video.duration||0,video.currentTime+5)};
+$('vSeek').oninput=e=>{if(video.duration)video.currentTime=e.target.value/1000*video.duration};
+$('vSpeed').onchange=e=>{video.playbackRate=+e.target.value};
+$('vFull').onclick=()=>{const w=$('videoWrap');if(document.fullscreenElement)document.exitFullscreen();else if(w.requestFullscreen)w.requestFullscreen()};
+$('vPanel').onclick=()=>{S.panel=((S.panel||0)+1)%3;saveSettings();applyView()};
+video.addEventListener('play',()=>{$('vPlay').textContent='⏸'});video.addEventListener('pause',()=>{$('vPlay').textContent='▶'});
+video.addEventListener('timeupdate',()=>{if(video.duration&&document.activeElement!==$('vSeek'))$('vSeek').value=video.currentTime/video.duration*1000;$('vTime').textContent=fmt(video.currentTime)});
+document.addEventListener('fullscreenchange',()=>setTimeout(applyZoom,50));window.addEventListener('resize',applyZoom);
+document.addEventListener('keydown',e=>{const t=e.target&&e.target.tagName;if(t==='INPUT'||t==='SELECT'||t==='TEXTAREA'||e.ctrlKey||e.metaKey||e.altKey)return;
+ if(REV){const k=e.key.toLowerCase();if(['s','7','v','n','j','b'].indexOf(k)>=0){e.preventDefault();revAct(k);return}if(e.key==='Escape'){revAct('x');return}}
+ if(e.key===' '){e.preventDefault();togglePlay()}else if(e.key==='ArrowLeft'){$('vBack').click()}else if(e.key==='ArrowRight'){$('vFwd').click()}else if(e.key==='f'||e.key==='F'){$('vFull').click()}});
+
+/* ---------- Audio ---------- */
+const R1=v=>Math.round(v*10)/10;
+function audioFeatures(db,hz){
+ const n=db.length,v=i=>Number.isFinite(db[i])?Math.max(-120,db[i]):-120,bin=f=>Math.max(0,Math.min(n-1,Math.round(f/hz)));
+ const mean=(f0,f1)=>{let s=0,k=0;for(let i=bin(f0);i<=bin(f1);i++){s+=v(i);k++}return k?s/k:-120};
+ let p=0;for(let i=bin(60);i<=bin(8000);i++)p+=Math.pow(10,v(i)/10);
+ const a=bin(2000),b=bin(4500),arr=[];for(let i=a;i<=b;i++)arr.push(v(i));arr.sort((x,y)=>x-y);
+ return {rms:10*Math.log10(p+1e-12),crowd:mean(500,2000),whis:arr.length?arr[arr.length-1]-arr[arr.length>>1]:0,high:mean(4500,9000)}}
+function whistleEvents(aud,thr){thr=thr||22;const w=aud.whis,ev=[],off=aud.t0||0;let i=0;
+ while(i<w.length){if(w[i]>thr&&aud.rms[i]>-90){let j=i;while(j<w.length&&w[j]>thr)j++;if(j-i>=2)ev.push(R1(i*aud.step+off));i=j+5}else i++}return ev}
+function ensureAudio(){if(AUD)return AUD;const AC=window.AudioContext||window.webkitAudioContext;if(!AC)throw new Error('este navegador no tiene WebAudio');
+ const ac=new AC(),src=ac.createMediaElementSource(video),an=ac.createAnalyser(),out=ac.createGain(),rec=ac.createMediaStreamDestination();
+ an.fftSize=4096;an.smoothingTimeConstant=0;src.connect(an);src.connect(out);out.connect(ac.destination);src.connect(rec);
+ video.addEventListener('play',()=>{if(ac.state==='suspended')ac.resume()});AUD={ac,src,an,out,rec};return AUD}
+function audioWin(arr,t0,t1,step,off){step=step||0.2;off=off||0;return arr.slice(Math.max(0,Math.round((t0-off)/step)),Math.min(arr.length,Math.round((t1-off)/step)))}
+function applyAudioFeatures(){if(!AUDIO||!AUDIO.rms||!AUDIO.rms.length)return;WHIST=whistleEvents(AUDIO);const M=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0,st=AUDIO.step||0.2,off=AUDIO.t0||0,len=AUDIO.rms.length*st;
+ candidates.forEach(c=>{if(!c.f)return;const on=isFinite(c.onset)?c.onset:c.event;
+  if(on-12<off||on+5>off+len){['aw','awn','ac','ar','ah'].forEach(k=>{delete c.f[k]});return}
+  const W=(a,x,y)=>audioWin(a,x,y,st,off),aw=W(AUDIO.whis,on-8,on+2);
+  c.f.aw=R1(aw.length?Math.max.apply(null,aw):0);c.f.awn=WHIST.filter(t=>t>=on-12&&t<=on+4).length;
+  c.f.ac=R1(M(W(AUDIO.crowd,on-1,on+5))-M(W(AUDIO.crowd,on-12,on-5)));
+  c.f.ar=R1(M(W(AUDIO.rms,on-1,on+5))-M(W(AUDIO.rms,on-12,on-5)));
+  c.f.ah=R1(M(W(AUDIO.high,on-1,on+5))-M(W(AUDIO.high,on-12,on-5)))});
+ const el=$('audioInfo');if(el)el.textContent='Audio analizado del min '+Math.round(off/60)+' al '+Math.round((off+len)/60)+': '+WHIST.length+' silbatos detectados. Cada corte de ese tramo muestra si hay silbato cerca y cuánto sube el ambiente tras el lanzamiento.';renderTimeline();signalReport()}
+async function analyzeAudio(){
+ if(busy()){setStatus('Espera a que termine la tarea en curso');return}
+ if(!video.duration){setStatus('Carga un vídeo primero');return}
+ let A;try{A=ensureAudio()}catch(e){setStatus('Este navegador no permite analizar el audio: '+e.message);return}
+ audioRunning=true;stop.disabled=false;analyze.disabled=true;playing=null;$('clipTag').hidden=true;
+ const rate0=video.playbackRate,rate=+$('audioRate').value||4;A.out.gain.value=0;
+ const step=0.2,dur=video.duration,tA=Math.max(0,(+$('audioFrom').value||0)*60),tB=Math.min(dur,(+$('audioTo').value||dur/60)*60),aud={step,t0:tA,rms:[],crowd:[],whis:[],high:[]},buf=new Float32Array(A.an.frequencyBinCount),hz=A.ac.sampleRate/A.an.fftSize;let next=0;
+ if(tB-tA<10){audioRunning=false;stop.disabled=true;analyze.disabled=false;A.out.gain.value=1;setStatus('El tramo de audio debe durar al menos 10 s');return}
+ try{await A.ac.resume();await seekTo(tA);video.playbackRate=rate;await video.play();
+  await new Promise(res=>{const iv=setInterval(()=>{
+   if(!audioRunning||video.ended||video.currentTime>=tB-0.05){clearInterval(iv);res();return}
+   A.an.getFloatFrequencyData(buf);const f=audioFeatures(buf,hz),t=video.currentTime;
+   while(tA+next*step<=t){aud.rms.push(R1(f.rms));aud.crowd.push(R1(f.crowd));aud.whis.push(R1(f.whis));aud.high.push(R1(f.high));next++}
+   if(next%25===0)setStatus('Analizando el audio… '+Math.round((t-tA)/(tB-tA)*100)+' % (a '+rate+'×; no cambies de pestaña)')},40)})}
+ catch(err){setStatus('No se pudo analizar el audio: '+err.message)}
+ video.pause();video.playbackRate=rate0;A.out.gain.value=1;
+ const silent=aud.rms.length&&Math.max.apply(null,aud.rms)<-100;
+ if(aud.rms.length<50)setStatus('No se obtuvo audio suficiente (análisis detenido o vídeo sin sonido)');
+ else if(silent){setStatus('El navegador ha silenciado el audio a '+rate+'×: prueba con una velocidad menor')}
+ else{AUDIO=aud;applyAudioFeatures();renderCandidates();setStatus('Audio analizado: '+WHIST.length+' silbatos detectados')}
+ audioRunning=false;stop.disabled=true;analyze.disabled=false}
+ $('audioBtn').onclick=analyzeAudio;
+ $('audioRate').onchange=e=>{S.audioRate=+e.target.value;saveSettings()};
+ $('audioFrom').onchange=e=>{S.audioFrom=+e.target.value;saveSettings()};$('audioTo').onchange=e=>{S.audioTo=+e.target.value;saveSettings()};
+ $('showWhistle').onchange=e=>{S.showWhistle=e.target.checked;saveSettings();renderTimeline()};
+
+/* ---------- Balón ---------- */
+const BALL={model:null,cv:null};
+function loadScript(src){return new Promise((res,rej)=>{const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=()=>rej(new Error('no se pudo cargar '+src));document.head.appendChild(s)})}
+async function ensureBallModel(){if(BALL.model)return BALL.model;setStatus('Cargando el detector de objetos…');
+ if(!window.tf)await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.22.0/dist/tf.min.js');
+ if(!window.cocoSsd)await loadScript('https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js');
+ BALL.model=await window.cocoSsd.load({base:'mobilenet_v2'});return BALL.model}
+function isBallish(d,vh){return d.class==='sports ball'||((d.class==='orange'||d.class==='frisbee'||d.class==='apple')&&d.h<vh*0.06)}
+async function detectTiles(m){const vw=video.videoWidth,vh=video.videoHeight,cols=2,rows=2,ov=0.12,tw=Math.min(vw,vw/cols*(1+ov)),th=Math.min(vh,vh/rows*(1+ov)),out=[];
+ const cv=BALL.cv||(BALL.cv=document.createElement('canvas'));cv.width=Math.round(tw);cv.height=Math.round(th);const g=cv.getContext('2d');
+ for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const sx=Math.max(0,Math.min(vw-tw,c*(vw-tw)/(cols-1))),sy=Math.max(0,Math.min(vh-th,r*(vh-th)/(rows-1)));
+  g.drawImage(video,sx,sy,tw,th,0,0,cv.width,cv.height);const p=await m.detect(cv,20,0.15);
+  p.forEach(d=>out.push({class:d.class,score:d.score,x:sx+d.bbox[0],y:sy+d.bbox[1],w:d.bbox[2],h:d.bbox[3]}))}
+ return out}
+function drawBallOverlay(dets){const cv=$('ballOv'),wr=$('videoWrap').getBoundingClientRect(),r=video.getBoundingClientRect(),vw=video.videoWidth,vh=video.videoHeight;
+ cv.width=Math.round(wr.width);cv.height=Math.round(wr.height);cv.hidden=false;const g=cv.getContext('2d');g.clearRect(0,0,cv.width,cv.height);
+ const sc=Math.min(r.width/vw,r.height/vh),ox=r.left-wr.left+(r.width-vw*sc)/2,oy=r.top-wr.top+(r.height-vh*sc)/2;
+ dets.forEach(d=>{const ball=isBallish(d,vh);if(!ball&&d.class!=='person')return;g.lineWidth=ball?3:1;g.strokeStyle=ball?'#ffd54a':'#7aa2ff';
+  g.strokeRect(ox+d.x*sc,oy+d.y*sc,d.w*sc,d.h*sc);if(ball){g.fillStyle='#ffd54a';g.font='12px sans-serif';g.fillText(Math.round(d.score*100)+' %',ox+d.x*sc,oy+d.y*sc-3)}})}
+async function ballTest(){if(busy()){setStatus('Espera a que termine la tarea en curso');return}
+ if(!video.videoWidth){setStatus('Carga un vídeo primero');return}video.pause();
+ try{const m=await ensureBallModel();setStatus('Detectando en este fotograma…');const t0=performance.now(),dets=await detectTiles(m);drawBallOverlay(dets);
+  const balls=dets.filter(d=>isBallish(d,video.videoHeight)),pers=dets.filter(d=>d.class==='person');
+  const msg='Fotograma analizado en '+Math.round(performance.now()-t0)+' ms: '+pers.length+' personas y '+balls.length+' posible(s) balón(es)'+(balls.length?' (mejor confianza '+Math.round(Math.max.apply(null,balls.map(b=>b.score))*100)+' %)':'');
+  setStatus(msg);$('ballInfo').textContent=msg+(balls.length?'. Cuadro amarillo = balón, azul = personas. Comprueba en la imagen que el amarillo es el balón de verdad.':'. Si en la imagen se ve el balón y aquí no sale marcado, este detector no sirve para tu cámara.')}
+ catch(e){setStatus('No se pudo usar el detector de balón: '+e.message)}}
+async function ballPass(){if(busy()){setStatus('Espera a que termine la tarea en curso');return}
+ if(!video.videoWidth){setStatus('Carga un vídeo primero');return}
+ let m;try{m=await ensureBallModel()}catch(e){setStatus('No se pudo cargar el detector de balón: '+e.message);return}
+ const team=$('seqTeam').value,base=candidates.filter(c=>c.kind!=='spike'&&(team==='both'||c.team===team));
+ base.sort((a,b)=>(a.status==='pending')-(b.status==='pending'));
+ const list=base.slice(0,+$('ballN').value||10);
+ if(!list.length){setStatus('No hay cortes que analizar');return}
+ ballRunning=true;stop.disabled=false;analyze.disabled=true;playing=null;video.pause();const vh=video.videoHeight;let done=0;
+ try{for(let i=0;i<list.length&&ballRunning;i++){const c=list[i],b=isFinite(c.onset)?c.onset:c.event,pts=[];let frames=0;
+   for(let t=Math.max(0,b-9);t<=b+1&&ballRunning;t+=0.5){await seekTo(t);const dets=await detectTiles(m);frames++;
+    const bl=dets.filter(d=>isBallish(d,vh)&&d.score>=0.25).sort((x,y)=>y.score-x.score)[0];if(bl)pts.push([R1(t),Math.round(bl.x+bl.w/2),Math.round(bl.y+bl.h/2),Math.round(bl.score*100)/100])}
+   let vmax=0;for(let k=1;k<pts.length;k++){const dt=pts[k][0]-pts[k-1][0];if(dt>0&&dt<=1)vmax=Math.max(vmax,Math.hypot(pts[k][1]-pts[k-1][1],pts[k][2]-pts[k-1][2])/vh/dt)}
+   c.ball=pts;c.f.bn=frames?Math.round(pts.length/frames*100)/100:0;c.f.bmax=pts.length?Math.max.apply(null,pts.map(p=>p[3])):0;c.f.bv=Math.round(vmax*100)/100;done=i+1;
+   setStatus('Buscando el balón: corte '+done+' de '+list.length+' · balón visto en '+Math.round(c.f.bn*100)+' % de los fotogramas')}
+ }catch(err){setStatus('No se pudo completar la búsqueda de balón: '+err.message)}
+ ballRunning=false;stop.disabled=true;analyze.disabled=!video.duration;renderCandidates();saveLearning();
+ const withBall=list.slice(0,done).filter(c=>c.f.bn>0).length;
+ signalReport();
+ $('ballInfo').textContent='Balón buscado en '+done+' cortes; se vio en '+withBall+' de ellos ('+(done?Math.round(100*withBall/done):0)+' %). Exporta el aprendizaje y súbelo para comprobar si esta señal separa los lanzamientos de los falsos.';
+ setStatus($('ballInfo').textContent)}
+
+const SIGS=[['awn','silbato cerca del lanzamiento'],['aw','fuerza del silbato'],['ac','subida del ambiente'],['ar','subida del volumen'],['ah','subida de agudos'],['bn','balón visible'],['bmax','confianza del balón'],['bv','velocidad del balón']];
+function aucPair(P,N){let s=0;P.forEach(p=>N.forEach(q=>{s+=p>q?1:p===q?.5:0}));return s/(P.length*N.length)}
+function signalReport(){const el=$('signalInfo');if(!el)return;const E=candidates.filter(c=>c.f&&(c.status==='accepted'||c.status==='rejected')),out=[];
+ const cmp=(title,pos,neg,min)=>SIGS.forEach(([k,name])=>{const P=pos.map(c=>c.f[k]).filter(v=>v!==undefined),N=neg.map(c=>c.f[k]).filter(v=>v!==undefined);if(P.length<min||N.length<min)return;
+  const a=aucPair(P,N),b=Math.max(a,1-a);out.push([b,title+' · '+name+': '+b.toFixed(2).replace('.',',')+(a>=.5?' (más alto en los '+(title.indexOf('7')>=0?'7 m':'reales')+')':' (más alto en los '+(title.indexOf('7')>=0?'lanzamientos normales':'falsos')+')')+' · n='+P.length+' y '+N.length])});
+ cmp('Real frente a falso',E.filter(c=>c.status==='accepted'),E.filter(c=>c.status==='rejected'),8);
+ cmp('7 m frente a lanzamiento',E.filter(c=>c.status==='accepted'&&c.cat==='siete'),E.filter(c=>c.status==='accepted'&&c.cat!=='siete'),3);
+ out.sort((x,y)=>y[0]-x[0]);
+ el.textContent=out.length?'0,50 = no separa nada; a partir de 0,70 empieza a ser útil.\\n'+out.map(o=>o[1]).join('\\n'):'Sin datos suficientes: hace falta haber analizado el audio o buscador el balón, y tener al menos 8 cortes validados y 8 descartados en ese tramo (3 para comparar 7 m).'}
+ $('sigBtn').onclick=signalReport;
+ $('ballTest').onclick=ballTest;$('ballBtn').onclick=ballPass;$('ballN').onchange=e=>{S.ballN=+e.target.value;saveSettings()};
+
+/* ---------- Ventana del corte ---------- */
+function clipStart(c){if(c.mStart!=null)return c.mStart;if(LW){const s=lwBase(c)+LW.s;return Math.max(0,c.mEnd!=null?Math.min(s,c.mEnd-(LW.e-LW.s)):s)}return Math.max(0,c.onset-S.pre)}
+function clipEnd(c){const d=video.duration||1e9;const e=c.mEnd!=null?c.mEnd:LW?Math.min(d,c.mStart!=null?Math.max(lwBase(c)+LW.e,c.mStart+(LW.e-LW.s)):lwBase(c)+LW.e):Math.min(d,Math.max(c.burstEnd,c.event)+S.post);return Math.max(e,clipStart(c)+1)}
+function lwBase(c){return LW.anchor==='onset'&&isFinite(c.onset)?c.onset:c.event}
+function refreshLW(){LW=null;if(!S.useTiming)return;const nk=s=>String(s).normalize('NFC').toLowerCase(),pre=nk(videoName)+'@',own=TIMING.filter(t=>nk(t.k).indexOf(pre)===0);
+ const pick=(arr,fs,fe,min)=>{const s=arr.map(t=>t[fs]).filter(v=>v!=null),e=arr.map(t=>t[fe]).filter(v=>v!=null);return s.length>=min&&e.length>=min?{s,e}:null};
+ let r=null,anchor='onset',scope='este partido';
+ r=pick(own,'so','eo',8);if(!r){r=pick(own,'s','e',8);anchor='event'}
+ if(!r){scope='tus partidos anteriores';r=pick(TIMING,'so','eo',3);anchor='onset';if(!r){r=pick(TIMING,'s','e',3);anchor='event'}}
+ if(!r)return;
+ const p=(a,q)=>{const b=[...a].sort((x,y)=>x-y);return b[Math.min(b.length-1,Math.max(0,Math.round(q*(b.length-1))))]};
+ LW={s:p(r.s,.25),e:p(r.e,.75),ns:r.s.length,ne:r.e.length,anchor,scope}}
+function updateTimingInfo(){const el=$('timingInfo');if(!el)return;const f=v=>v<0?Math.abs(v).toFixed(1)+' s antes':v.toFixed(1)+' s después';
+ el.textContent=LW?'Ventana aprendida de '+LW.scope+': empieza '+f(LW.s)+' y termina '+f(LW.e)+' del '+(LW.anchor==='onset'?'inicio de la ráfaga de movimiento':'pico de movimiento')+' (a partir de '+Math.min(LW.ns,LW.ne)+' ajustes tuyos).':(S.useTiming?'Aún no hay suficientes ajustes tuyos: ajusta y valida cortes (o usa la revisión rápida) y la app copiará tu ventana.':'Ventana aprendida desactivada: se usan «Antes» y «Después».')}
+function learnTiming(c){const k=videoName+'@'+Math.round(c.event);TIMING=TIMING.filter(t=>t.k!==k);
+ if(c.status==='accepted'&&(c.mStart!=null||c.mEnd!=null)){const o=isFinite(c.onset)?c.onset:null;TIMING.push({k,s:c.mStart!=null?c.mStart-c.event:null,e:c.mEnd!=null?c.mEnd-c.event:null,so:o!=null&&c.mStart!=null?c.mStart-c.onset:null,eo:o!=null&&c.mEnd!=null?c.mEnd-c.onset:null})}
+ if(TIMING.length>200)TIMING.shift();saveTiming();refreshLW();updateTimingInfo()}
+$('doubt').oninput=e=>{S.doubt=+e.target.value;$('doubtVal').textContent=S.doubt;saveSettings();renderCandidates()};
+$('showDoubt').onchange=e=>{S.showDoubt=e.target.checked;saveSettings();renderCandidates()};
+$('auto7').onchange=e=>{S.auto7=e.target.checked;saveSettings();$('reclass').onclick()};
+$('markPre').oninput=e=>{S.markPre=+e.target.value;$('markPreVal').textContent=String(S.markPre).replace('.',',')+' s';saveSettings()};
+$('markPost').oninput=e=>{S.markPost=+e.target.value;$('markPostVal').textContent=String(S.markPost).replace('.',',')+' s';saveSettings()};
+$('useTiming').onchange=e=>{S.useTiming=e.target.checked;saveSettings();refreshLW();updateTimingInfo();renderCandidates()};
+$('pre').oninput=e=>{S.pre=+e.target.value;$('preVal').textContent=S.pre+' s';saveSettings();renderCandidates()};
+$('post').oninput=e=>{S.post=+e.target.value;$('postVal').textContent=S.post+' s';saveSettings();renderCandidates()};
+
+/* ---------- Categorías y filtros ---------- */
+function catName(c){const k=S.cats.find(k=>k.id===c.cat);return k?k.name:c.cat}
+function teamLabel(c){return c.team==='A'?S.teams.A.name:c.team==='B'?S.teams.B.name:''}
+function autoName(c){return [catName(c),teamLabel(c),fmt(c.event)].filter(Boolean).join(' · ')}
+function displayName(c){return c.customName||autoName(c)}
+const RELK=['span','travel','p2'];
+const RELPRIOR={mu:[0.03446,0.01871,3.32603],sd:[0.0178,0.01467,1.06356],w:[-0.0954,0.6097,0.7683],b:0.35};
+let REL=RELPRIOR;
+function relX(f){return f&&RELK.every(k=>f[k]!==undefined)?RELK.map(k=>f[k]):null}
+function fitLogistic(X,y,lam){const n=X.length,d=X[0].length,mu=[],sd=[];
+ for(let j=0;j<d;j++){const m=X.reduce((s,r)=>s+r[j],0)/n;mu.push(m);sd.push(Math.sqrt(X.reduce((s,r)=>s+(r[j]-m)**2,0)/n)||1)}
+ const Z=X.map(r=>r.map((v,j)=>(v-mu[j])/sd[j]));let w=Array(d).fill(0),b=0;
+ for(let it=0;it<900;it++){const gw=Array(d).fill(0);let gb=0;
+  for(let i=0;i<n;i++){let z=b;for(let j=0;j<d;j++)z+=w[j]*Z[i][j];const e=1/(1+Math.exp(-z))-y[i];for(let j=0;j<d;j++)gw[j]+=e*Z[i][j];gb+=e}
+  for(let j=0;j<d;j++)w[j]-=0.5*(gw[j]/n+lam*w[j]);b-=0.5*gb/n}
+ return {mu,sd,w,b}}
+function fitRel0(){const E=TRAIN.filter(t=>(t.rel===0||t.rel===1)&&relX(t.f)),pos=E.filter(t=>t.rel===1).length;
+ if(E.length<24||pos<8||E.length-pos<8){REL=RELPRIOR;return}
+ REL=fitLogistic(E.map(t=>relX(t.f)),E.map(t=>t.rel),1/(0.3*E.length));REL.n=E.length}
+let relAUC=null;
+function aucOf(p,y){const idx=p.map((v,i)=>i).sort((a,b)=>p[a]-p[b]);let rs=0,np=0;idx.forEach((i,r)=>{if(y[i]===1){rs+=r+1;np++}});const nn=y.length-np;return np&&nn?(rs-np*(np+1)/2)/(np*nn):null}
+function evalRel(){relAUC=null;const nk=s=>String(s).normalize('NFC').toLowerCase(),pre=nk(videoName)+'@';
+ const E=TRAIN.filter(t=>(t.rel===0||t.rel===1)&&relX(t.f)&&nk(t.key).indexOf(pre)===0),pos=E.filter(t=>t.rel===1).length;
+ if(E.length<40||pos<12||E.length-pos<12)return;
+ const X=E.map(t=>relX(t.f)),y=E.map(t=>t.rel),p=Array(E.length).fill(0.5),K=5;
+ for(let k=0;k<K;k++){const tr=[],te=[];E.forEach((_,i)=>(i%K===k?te:tr).push(i));
+  const m=fitLogistic(tr.map(i=>X[i]),tr.map(i=>y[i]),1/(0.3*tr.length));
+  te.forEach(i=>{let z=m.b;X[i].forEach((v,j)=>{z+=m.w[j]*(v-m.mu[j])/m.sd[j]});p[i]=1/(1+Math.exp(-z))})}
+ relAUC=aucOf(p,y)}
+function fitRel(){fitRel0();evalRel()}
+function updateDoubtInfo(){const el=$('doubtInfo');if(!el)return;
+ el.textContent=S.doubt===0?'':relAUC===null?'Filtro inactivo: necesita al menos 40 cortes de este partido validados o descartados para comprobar si funciona.':relAUC>=0.68?'Filtro activo (fiabilidad medida con tus etiquetas de este partido: '+relAUC.toFixed(2)+').':'Filtro desactivado: con tus etiquetas de este partido solo acierta '+relAUC.toFixed(2)+' (necesita 0,68), así que no se usa para no ocultarte lanzamientos reales.'}
+function relP(c){const x=relX(c.f);if(!x||!REL)return undefined;let z=REL.b;x.forEach((v,j)=>{z+=REL.w[j]*(v-REL.mu[j])/REL.sd[j]});return 1/(1+Math.exp(-z))}
+function syncTrain(){const nk=s=>String(s).normalize('NFC').toLowerCase();
+ candidates.forEach(c=>{if(!c.f||(c.status!=='accepted'&&c.status!=='rejected'))return;const key=videoName+'@'+Math.round(c.event);
+  TRAIN=TRAIN.filter(t=>nk(t.key)!==nk(key));TRAIN.push({key,f:c.f,cat:c.cat,kind:c.kind||'burst',rel:c.status==='accepted'?1:0})});
+ while(TRAIN.length>500)TRAIN.shift();saveTrain();fitRel()}
+function doubtThr(){return S.doubt>0?0.25+0.04*S.doubt:0}
+let doubtActive=false;
+function updateDoubtState(){const w=candidates.filter(c=>c.kind!=='spike'&&relP(c)!==undefined),fl=w.filter(c=>relP(c)<doubtThr()).length;doubtActive=S.doubt>0&&relAUC!==null&&relAUC>=0.68&&camTracking()&&(w.length<8||fl<=0.6*w.length)}
+function isDoubt(c){return doubtActive&&c.status==='pending'&&c.kind!=='spike'&&relP(c)!==undefined&&relP(c)<doubtThr()}
+function isVisible(c){if(!S.showDoubt&&isDoubt(c))return false;const k=S.cats.find(k=>k.id===c.cat);if(k&&!k.enabled)return false;
+ if(c.team==='?')return S.showUnk;if(S.teamFilter!=='both'&&c.team!==S.teamFilter)return false;return true}
+function activeClips(){return candidates.filter(c=>isVisible(c)&&c.status!=='rejected')}
+function byName(a,b){return displayName(a).localeCompare(displayName(b),'es',{numeric:true,sensitivity:'base'})}
+function teamGroups(){const g={A:[],B:[],'?':[]};activeClips().forEach(c=>g[c.team==='A'||c.team==='B'?c.team:'?'].push(c));['A','B','?'].forEach(k=>g[k].sort(byName));return g}
+function orderedClips(){if(S.view!=='team')return activeClips();const g=teamGroups();return g.A.concat(g.B,g['?'])}
+function shownTeams(){return S.seqTeam==='A'||S.seqTeam==='B'?[S.seqTeam]:['A','B']}
+function applyView(){const m=$('mainGrid');m.classList.toggle('teamwide',S.view==='team'&&shownTeams().length===2);m.classList.toggle('side1',S.panel===1);m.classList.toggle('side2',S.panel===2);
+ $('viewMode').textContent=S.view==='team'?'Vista por tiempo':'Vista por equipos';$('vPanel').textContent=S.panel===1?'◨':S.panel===2?'▣':'◧';setTimeout(applyZoom,50)}
+$('viewMode').onclick=()=>{S.view=S.view==='team'?'time':'team';saveSettings();applyView();renderCandidates()};
+$('teamFilter').onchange=e=>{S.teamFilter=e.target.value;saveSettings();renderCandidates()};
+$('showUnk').onchange=e=>{S.showUnk=e.target.checked;saveSettings();renderCandidates()};
+$('addCat').onclick=()=>{const v=$('newCat').value.trim();if(!v)return;if(S.cats.some(k=>k.name.toLowerCase()===v.toLowerCase())){setStatus('Esa categoría ya existe');return}
+ S.cats.push({id:'c'+Date.now().toString(36),name:v,enabled:true,builtin:false});$('newCat').value='';saveSettings();renderCandidates()};
+$('newCat').onkeydown=e=>{if(e.key==='Enter')$('addCat').click()};
+function renderCats(){const box=$('catList');box.innerHTML='';
+ S.cats.forEach(k=>{const n=candidates.filter(c=>c.cat===k.id&&c.status!=='rejected').length;
+  const row=document.createElement('label');row.className='catRow';
+  const cb=document.createElement('input');cb.type='checkbox';cb.checked=k.enabled;cb.onchange=()=>{k.enabled=cb.checked;saveSettings();renderCandidates()};
+  const sp=document.createElement('span');sp.textContent=k.name;const em=document.createElement('em');em.textContent=n?'('+n+')':'';
+  row.append(cb,sp,em);
+  if(!k.builtin){const x=document.createElement('button');x.textContent='✕';x.title='Eliminar categoría';
+   x.onclick=ev=>{ev.preventDefault();S.cats=S.cats.filter(z=>z.id!==k.id);candidates.forEach(c=>{if(c.cat===k.id)c.cat='intensa'});TRAIN=TRAIN.filter(t=>t.cat!==k.id);saveTrain();saveSettings();renderCandidates()};row.appendChild(x)}
+  box.appendChild(row)})}
+
+/* ---------- Clasificación ---------- */
+function burstFeatures(b){const n=b.ts.length,dur=(b.ts[n-1]-b.ts[0])+0.2,xs=b.xs,third=Math.max(1,Math.floor(n/3));
+ const mean=a=>a.reduce((s,v)=>s+v,0)/(a.length||1);
+ const travel=Math.abs(mean(xs.slice(-third))-mean(xs.slice(0,third)));
+ const so=[...xs].sort((p,q)=>p-q),span=so[Math.floor(.9*(n-1))]-so[Math.floor(.1*(n-1))];
+ const peakX=mean(xs.slice(Math.max(0,b.peakIdx-2),Math.min(n,b.peakIdx+3)));
+ const sharp=b.peak/(mean(b.ss)||1e-6);
+ const r=v=>Math.round(v*1000)/1000;return {dur:r(dur),travel:r(travel),span:r(span),peakX:r(peakX),sharp:r(sharp),score:r(b.peak)}}
+function heuristicCat(f){if(camTracking())return 'lanzamiento';const goal=f.peakX<0.32||f.peakX>0.68;
+ if(f.travel>0.28&&f.dur<=14)return 'contraataque';
+ if(goal&&f.sharp>=1.25)return 'lanzamiento';
+ if(f.span<0.30&&f.dur>=6)return 'posicional';
+ if(goal)return 'lanzamiento';return 'intensa'}
+const FEATS=['dur','travel','span','peakX','sharp','score','sp','pl'];
+function relWeights(TB){const pos=TB.filter(t=>t.cat==='siete'),neg=TB.filter(t=>t.cat!=='siete');if(pos.length<3||neg.length<6)return null;
+ const w={};let any=false;
+ FEATS.forEach(k=>{w[k]=0;const P=pos.map(t=>t.f[k]).filter(v=>v!==undefined),N=neg.map(t=>t.f[k]).filter(v=>v!==undefined);if(P.length<3||N.length<6)return;
+  let s=0;P.forEach(p=>N.forEach(q=>{s+=p>q?1:p===q?.5:0}));const a=s/(P.length*N.length),v=Math.max(0,Math.abs(a-.5)*2-0.4);if(v>0){w[k]=v;any=true}});
+ return any?w:null}
+function sdOf(TB,keys){const sd={};keys.forEach(k=>{const v=TB.map(t=>t.f[k]).filter(x=>x!==undefined),m=v.reduce((s,x)=>s+x,0)/(v.length||1);sd[k]=Math.sqrt(v.reduce((s,x)=>s+(x-m)**2,0)/(v.length||1))||1});return sd}
+function predictCat(f){
+ if(camTracking())return {id:S.auto7&&is7(f)?'siete':'lanzamiento',src:'auto'};
+ const TB=TRAIN.filter(t=>t.kind!=='spike'&&t.rel!==0&&t.f);
+ if(TB.length>=6){const W=relWeights(TB),keys=W?FEATS.filter(k=>W[k]>0):['dur','travel','span','sharp','score'],sd=sdOf(TB,keys);
+  const nb=TB.map(t=>({cat:t.cat,d:keys.reduce((s,k)=>{const x=f[k],y=t.f[k];return x===undefined||y===undefined?s:s+(W?W[k]:1)*((x-y)/sd[k])**2},0)})).sort((a,b)=>a.d-b.d).slice(0,3);
+  const votes={};nb.forEach(n=>votes[n.cat]=(votes[n.cat]||0)+1);const best=Object.entries(votes).sort((a,b)=>b[1]-a[1])[0];
+  if(best&&best[1]>=2&&S.cats.some(k=>k.id===best[0]))return {id:best[0],src:'aprendid'}}
+ return {id:heuristicCat(f),src:'auto'}}
+function addTraining(c){if(!c.f)return;const key=videoName+'@'+Math.round(c.event);
+ TRAIN=TRAIN.filter(t=>t.key!==key);TRAIN.push({key,f:c.f,cat:c.cat,kind:c.kind||'burst',rel:c.status==='accepted'?1:c.status==='rejected'?0:undefined});if(TRAIN.length>500)TRAIN.shift();saveTrain();fitRel()}
+$('resetFilters').onclick=()=>resetFilters();
+$('reclass').onclick=()=>{let n=0;candidates.forEach(c=>{if(c.catSrc==='manual'||c.kind==='spike'||!c.f)return;const p=predictCat(c.f);if(p.id!==c.cat||p.src!==c.catSrc){c.cat=p.id;c.catSrc=p.src;n++}});
+ setStatus(n?n+' cortes reclasificados':'Sin cambios (aprende más validando y corrigiendo categorías)');saveLearning();renderCandidates()};
+$('resetLearn').onclick=()=>{if(!confirm('¿Borrar todo lo que la app ha aprendido de tus correcciones?'))return;TRAIN=[];saveTrain();fitRel();TIMING=[];saveTiming();refreshLW();updateTimingInfo();renderCandidates();setStatus('Aprendizaje borrado')};
+
+/* ---------- Vídeo ---------- */
+file.onchange=()=>{if(url)URL.revokeObjectURL(url);const f=file.files[0];if(!f)return;url=URL.createObjectURL(f);videoName=f.name;loadSeq();video.src=url;video.load();analyze.disabled=false;setStatus(f.name);series=newSeries();candidates=[];playing=null;playingId=null;renderCandidates()};
+$('sens').oninput=e=>$('sensVal').textContent=e.target.value;
+video.ontimeupdate=()=>{$('time').textContent=fmt(video.currentTime);const d=video.duration||1;$('playhead').style.left=(video.currentTime/d*100)+'%';$('hud').textContent=video.duration?fmt(video.currentTime)+' / '+fmt(video.duration):'Cargando…'};
+video.onloadedmetadata=()=>{$('hud').textContent='00:00 / '+fmt(video.duration);$('stable').textContent='Esperando análisis';renderTimeline()};
+$('timeline').onclick=e=>{if(!video.duration)return;const r=$('timeline').getBoundingClientRect();video.currentTime=Math.max(0,Math.min(video.duration,(e.clientX-r.left)/r.width*video.duration))};
+function seekTo(t){return new Promise(r=>{let done=false;const f=()=>{if(done)return;done=true;video.removeEventListener('seeked',f);r()};video.addEventListener('seeked',f);setTimeout(f,1500);video.currentTime=t})}
+
+/* ---------- Análisis ---------- */
+function resetSample(){small.width=96;small.height=54;last=null}
+function motionScore(){sctx.drawImage(video,0,0,96,54);const a=sctx.getImageData(0,0,96,54).data;if(!last){last=a;return {sc:0,cx:.5,zl:0,zr:0}}
+ let sum=0,sx=0,sw=0,sl=0,sr=0;
+ for(let i=0,p=0;i<a.length;i+=4,p++){const dd=Math.abs(a[i]-last[i])+Math.abs(a[i+1]-last[i+1])+Math.abs(a[i+2]-last[i+2]);const x=p%96;sum+=dd;sx+=dd*x;sw+=dd;if(x<29)sl+=dd;else if(x>=67)sr+=dd}
+ last=a;const zn=29*54*765;return {sc:Math.min(1,sum/(96*54*255*3)),cx:sw>0?sx/sw/95:.5,zl:sl/zn,zr:sr/zn}}
+function newBurst(t){return {onset:t,ts:[],ss:[],xs:[],mA:0,mB:0,mAll:0,peak:0,peakT:0,peakIdx:0,useTeams:false}}
+function addCandidate(b){
+ if(candidates.some(c=>Math.abs(c.event-b.peakT)<8))return;
+ const f=burstFeatures(b);{const q0=preQuiet(b.onset);if(q0!==undefined)f.q=q0;const qa0=calmBefore(b.onset);if(qa0!==undefined)f.qa=qa0}
+ const conf=Math.min(95,Math.round(45+Math.min(1,b.peak)*40)),tm=teamShareOf(b),cat=predictCat(f);
+ const nc={id:++uid,onset:b.onset,burstEnd:b.ts[b.ts.length-1],event:b.peakT,score:b.peak,confidence:conf,f,cat:cat.id,catSrc:cat.src,team:'?',teamShare:tm.share,teamOk:tm.ok,teamSingle:tm.single,teamManual:false,customName:null,mStart:null,mEnd:null,status:'pending'};
+ nc.team=tm.single?'?':teamFrom(nc,.5);candidates.push(nc);
+ candidates.sort((p,q)=>p.event-q.event);computeGaps();scheduleRender()}
+function scheduleRender(){if(renderQueued)return;renderQueued=true;requestAnimationFrame(()=>{renderQueued=false;
+ const ae=document.activeElement;if(running&&ae&&ae.closest&&ae.closest('#candidates'))return;renderCandidates()})}
+async function analyzeVideo(){if(!video.duration||busy())return;
+ running=true;analyze.disabled=true;stop.disabled=false;candidates=[];uid=0;playing=null;playingId=null;renderCandidates();resetSample();tprev=null;samples=[];series=newSeries();video.pause();
+ const step=0.20,total=video.duration,useTeams=!!(labA||labB);
+ let peak=0,peakT=0,inPlay=false,gameStart=0,activeRun=0,quietRun=0,lastCandidate=-999,candidateRun=0,burst=null;series.useTeams=useTeams;
+ setStatus(useTeams?'Buscando inicio del juego…':'Buscando inicio del juego… (sin colores de equipo: los cortes saldrán «sin equipo»)');
+
+ for(let t=0;t<total && running;t+=step){
+   video.currentTime=t;
+   await new Promise(r=>{let done=false;const f=()=>{if(done)return;done=true;video.removeEventListener('seeked',f);r()};video.addEventListener('seeked',f,{once:true});setTimeout(f,1200)});
+   const m=motionScore(),sc=m.sc,tst=useTeams?teamStats():null;
+   samples.push([t,sc]);series.t.push(t);series.cx.push(m.cx);series.sc.push(sc);series.zl.push(m.zl);series.zr.push(m.zr);series.ma.push(tst?tst.mA:0);series.mb.push(tst?tst.mB:0);series.mall.push(tst?tst.mAll:0);$('motion').textContent=Math.round(sc*100)+'%';
+
+   const threshold=0.045 + (10-(+$('sens').value))*0.003;
+   const strong=sc>threshold;
+   if(strong){activeRun++;quietRun=0}else{quietRun++;activeRun=Math.max(0,activeRun-1)}
+
+   if(!inPlay && activeRun>=8){
+      inPlay=true; gameStart=Math.max(0,t-2);series.gs=gameStart;
+      $('stable').textContent='Juego detectado';
+   }
+
+   if(inPlay){
+      if(strong){
+        if(candidateRun===0)burst=newBurst(t);
+        candidateRun++;burst.ts.push(t);burst.ss.push(sc);burst.xs.push(m.cx);
+        if(tst){burst.mA+=tst.mA;burst.mB+=tst.mB;burst.mAll+=tst.mAll;burst.useTeams=true}
+        if(sc>peak){peak=sc;peakT=t;burst.peakIdx=burst.ts.length-1}
+      }else{
+        if(burst && candidateRun>=5 && peakT-lastCandidate>12 && peak>threshold*1.18){
+          burst.peak=peak;burst.peakT=peakT;addCandidate(burst);
+          lastCandidate=peakT;
+        }
+        candidateRun=0;peak=0;peakT=0;burst=null;
+      }
+      if(quietRun>35){candidateRun=0;peak=0;peakT=0;burst=null}
+   }
+
+   if(inPlay&&series.t.length%150===0){detectSpikes(true);updatePost();assignTeams();scheduleRender()}
+   setStatus(inPlay
+      ? `Juego detectado · analizando ${Math.round(t/total*100)}% · ${candidates.length} cortes`
+      : `Buscando inicio del juego ${Math.round(t/total*100)}%`);
+   await new Promise(r=>setTimeout(r,0));
+ }
+ if(inPlay && burst && candidateRun>=5 && peakT-lastCandidate>12 && peak>0.055){burst.peak=peak;burst.peakT=peakT;addCandidate(burst)}
+
+ running=false;analyze.disabled=false;stop.disabled=true;finalizeBursts();applyAudioFeatures();const sp=detectSpikes();assignTeams();updateCamInfo();
+ let extra=(sp.skipped?' · Cámara que sigue el juego: se usan solo los cortes por ráfagas de movimiento':'')+((sp.created||sp.tagged)?' · Lanzamientos localizados: '+sp.created+' nuevos'+(sp.sevens?' ('+sp.sevens+' de 7 m)':'')+', '+sp.tagged+' ya incluidos en otros cortes':'');
+ if(candidates.length&&!candidates.some(isVisible)){resetFilters();extra=' · Los filtros ocultaban todos los cortes; los he quitado'}
+ {updateDoubtState();const nd=candidates.filter(isDoubt).length;if(nd)extra+=' · '+nd+' dudosos ocultos (probables saques de centro o de banda)'}
+ if(useTeams&&candidates.length&&candidates.filter(c=>c.team==='?').length>candidates.length*.6)extra+=' · Reconozco poco las camisetas: sube la tolerancia y revisa «Ver qué píxeles detecta»';
+ setStatus((inPlay
+   ? `Análisis terminado: ${candidates.length} candidatos de juego`
+   : 'No se ha detectado un tramo de juego suficientemente claro')+extra);
+ renderCandidates();saveLearning();drawPreview();
+}
+analyze.onclick=analyzeVideo;
+stop.onclick=()=>{if(running){running=false;setStatus('Análisis detenido')}if(recording){recording=false;setStatus('Descarga detenida')}if(audioRunning){audioRunning=false}if(ballRunning){ballRunning=false}};
+
+/* ---------- Detector de lanzamientos / 7 m: picos breves de movimiento junto a las porterías ---------- */
+function medOf(a){if(!a.length)return 0;const s=Float64Array.from(a).sort();return s[Math.floor(s.length/2)]}
+function pctOf(a,p){const s=Float64Array.from(a).sort();return s[Math.min(s.length-1,Math.floor(p*s.length))]}
+function preQuiet(onsetT){const n=series.t.length,ix=Math.round(onsetT/0.2);if(ix<45||ix>n)return undefined;
+ let st=0;while(st<n&&series.t[st]<series.gs)st++;const gm=medOf(series.sc.slice(st));if(!gm)return undefined;
+ return Math.round(Math.min(3,pctOf(series.sc.slice(ix-40,ix-3),.8)/gm)/3*1000)/1000}
+function gameMedian(){const n=series.t.length;let st=0;while(st<n&&series.t[st]<series.gs)st++;return medOf(series.sc.slice(st))}
+function postMove(onsetT,a,b,gm){const n=series.t.length,ix=Math.round(onsetT/0.2),i1=ix+Math.round(b/0.2);if(i1>n||!gm)return undefined;
+ const w=series.sc.slice(ix+Math.round(a/0.2),i1);if(!w.length)return undefined;return Math.round(w.reduce((s,v)=>s+v,0)/w.length/gm*1000)/1000}
+function computeGaps(){const b=candidates.filter(c=>c.kind!=='spike'&&c.f).sort((p,q)=>p.onset-q.onset);b.forEach((c,i)=>{c.f.gap=i?Math.min(99,Math.round((c.onset-b[i-1].onset)*10)/10):99})}
+function is7(f){return f.gap!==undefined&&f.sp!==undefined&&f.gap>=17+2*S.q7&&f.sp>=1.85+0.15*S.q7}
+function updatePost(){computeGaps();const gm=gameMedian();if(!gm)return;
+ candidates.forEach(c=>{if(c.kind==='spike'||!c.f||c.f.p2!==undefined)return;const sp=postMove(c.onset,5,14,gm),pl=postMove(c.onset,8,16,gm),p2=postMove(c.onset,2,8,gm);if(sp===undefined||pl===undefined||p2===undefined)return;
+  c.f.sp=sp;c.f.pl=pl;c.f.p2=p2;if(c.catSrc!=='manual'&&!c.restored){const p=predictCat(c.f);c.cat=p.id;c.catSrc=p.src}})}
+function enrichTrain(){const nk=s=>String(s).normalize('NFC').toLowerCase(),by={};candidates.forEach(c=>{if(c.f&&c.f.sp!==undefined)by[nk(videoName+'@'+Math.round(c.event))]=c.f});
+ TRAIN.forEach(t=>{const f=by[nk(t.key)];if(f&&t.f&&t.f.sp===undefined)t.f=Object.assign({},t.f,{sp:f.sp,pl:f.pl})});saveTrain()}
+function calmBefore(onsetT){const n=series.t.length,ix=Math.round(onsetT/0.2);if(ix<75||ix>n)return undefined;
+ let st=0;while(st<n&&series.t[st]<series.gs)st++;const gm=medOf(series.sc.slice(st));if(!gm)return undefined;
+ return Math.round(Math.min(3,pctOf(series.sc.slice(ix-70,ix-30),.6)/gm)/3*1000)/1000}
+function camTracking(){if(S.cam==='track')return true;if(S.cam==='fixed')return false;
+ let a=0,c=0;for(let i=0;i<series.sc.length;i++)if(series.sc[i]>0.05){a++;if(series.cx[i]>.35&&series.cx[i]<.65)c++}
+ return a>=40&&c/a>0.85}
+function updateCamInfo(){const el=$('camInfo');if(!series.t.length){el.textContent='';return}
+ el.textContent=(S.cam==='auto'?'Detectado: ':'Elegido: ')+(camTracking()?'la cámara sigue el juego (no se usan las zonas de portería; los lanzamientos salen de las ráfagas de movimiento).':'cámara fija (se buscan picos junto a las porterías).')}
+function finalizeBursts(){updatePost();candidates.forEach(c=>{if(c.kind==='spike'||!c.f||c.restored)return;const q=preQuiet(c.onset);if(q!==undefined)c.f.q=q;const qa=calmBefore(c.onset);if(qa!==undefined)c.f.qa=qa;if(c.catSrc==='manual')return;const p=predictCat(c.f);c.cat=p.id;c.catSrc=p.src})}
+function sv(f){return [f.q||0,Math.min(f.dur||0,4)/4,Math.min(f.sharp||0,10)/10,f.pq||0]}
+function detectSpikes(live){
+ const r={created:0,sevens:0,tagged:0},n=series.t.length,W=25,Q=40;if(n<Q+W)return r;
+ if(!live)candidates=candidates.filter(c=>!(c.kind==='spike'&&c.status==='pending'&&!c.customName&&c.catSrc!=='manual'&&!c.teamManual&&c.mStart==null&&c.mEnd==null));
+ if(camTracking()){r.skipped=true;return r}
+ const R3=v=>Math.round(v*1000)/1000;
+ const z=6.5-0.45*S.shot,floor=0.007-0.0004*S.shot,endI=live?n-26:n;
+ let start=0;while(start<n&&series.t[start]<series.gs)start++;
+ const quietRef=Math.max(1e-6,Math.min(pctOf(series.sc,Math.max(.05,.5-.04*S.q7)),(0.75-0.06*S.q7)*(medOf(series.sc.slice(start))||1)));
+ for(let i=series.q80.length;i<n;i++)series.q80.push(i<Q?9:pctOf(series.sc.slice(i-Q,i-3),.8));
+ const ex=TRAIN.filter(t=>t.kind==='spike'&&t.f&&t.f.q!==undefined&&(t.cat==='siete'||t.cat==='lanzamiento'));
+ const useKnn=ex.filter(t=>t.cat==='siete').length>=2&&ex.filter(t=>t.cat==='lanzamiento').length>=2;
+ function spikeCat(f,is7){if(useKnn){const v=sv(f),nb=ex.map(t=>({cat:t.cat,d:sv(t.f).reduce((a,x,i)=>a+(x-v[i])**2,0)})).sort((a,b)=>a.d-b.d).slice(0,3);return nb.filter(x=>x.cat==='siete').length>=2?'siete':'lanzamiento'}return is7?'siete':'lanzamiento'}
+ function addSpike(o){
+  const t0=series.t[o.i0],t1=series.t[o.last],tp=series.t[o.pk],peak=series[o.zn][o.pk],len=o.last-o.i0+1,is7=o.qi&&len<=15;
+  const post=series.sc.slice(o.last+3,o.last+18);
+  const f={dur:R3(len*.2+.2),travel:0,span:.1,peakX:o.zn==='zl'?.12:.88,sharp:R3(Math.min(10,peak/Math.max(o.base,1e-4))),score:R3(peak),q:R3(Math.min(3,series.q80[o.i0]/quietRef)/3),pq:R3(post.length?Math.min(3,medOf(post)/quietRef)/3:0)};
+  const cat=spikeCat(f,is7);
+  const cov=candidates.find(c=>c.kind!=='spike'&&tp>=clipStart(c)&&tp<=clipEnd(c));
+  if(cov){if(cov.catSrc==='auto'&&(cat==='siete'||cov.cat==='intensa'||cov.cat==='posicional')&&S.cats.some(k=>k.id===cat))cov.cat=cat;cov.shotTag=true;r.tagged++;return}
+  if(candidates.some(c=>c.kind==='spike'&&Math.abs(c.event-tp)<6))return;
+  const conf=Math.max(40,Math.min(92,Math.round(55+(peak/o.thr-1)*30)));
+  let a=0,b=0,al=0;for(let k=Math.max(0,o.i0-5);k<=o.last;k++){a+=series.ma[k];b+=series.mb[k];al+=series.mall[k]}
+  const ts=teamShareOf({useTeams:series.useTeams,mA:a,mB:b,mAll:al});
+  const nc={id:++uid,onset:t0,burstEnd:t1,event:tp,score:peak,confidence:conf,f,cat,catSrc:'auto',team:'?',teamShare:ts.share,teamOk:ts.ok,teamSingle:ts.single,teamManual:false,customName:null,mStart:null,mEnd:null,status:'pending',kind:'spike'};
+  nc.team=ts.single?'?':teamFrom(nc,.5);candidates.push(nc);r.created++;if(cat==='siete')r.sevens++}
+ ['zl','zr'].forEach(zn=>{
+  const x=series[zn],mx=medOf(x),sg=Math.max(1e-4,1.4826*medOf(x.map(v=>Math.abs(v-mx))));
+  let i=Math.max(W,Q,start,live?series.scanFrom:0);
+  while(i<endI){
+   const base=medOf(x.slice(i-W,i)),qi=series.q80[i]<=quietRef;
+   const thr=qi?Math.max(base*2.2,floor*0.8):Math.max(base*1.8,mx+z*sg,floor);
+   if(x[i]<=thr){i++;continue}
+   const hold=qi?Math.max(base*1.5,floor*0.5):Math.max(base*1.4,mx+0.6*z*sg,floor*0.7);
+   let last=i,pk=i,gap=0,j=i;
+   while(j<n-1&&j-i<25){j++;if(x[j]>Math.max(hold,0.35*x[pk])){last=j;gap=0;if(x[j]>x[pk])pk=j}else if(++gap>2)break}
+   if(last-i+1>=2&&last-i+1<=20)addSpike({zn,i0:i,last,pk,base,thr,qi});
+   i=last+10}});
+ if(live)series.scanFrom=Math.max(series.scanFrom,endI-30);else series.scanFrom=n;
+ candidates.sort((p,q)=>p.event-q.event);return r}
+function runSpikes(){if(running||recording)return;if(!series.t.length){setStatus('Analiza el vídeo primero');return}
+ series.scanFrom=0;finalizeBursts();const r=detectSpikes();assignTeams();updateCamInfo();renderCandidates();saveLearning();
+ if(r.skipped){setStatus('La cámara sigue el juego: no se usan las zonas de portería, solo las ráfagas de movimiento');return}
+ setStatus('Lanzamientos localizados: '+r.created+' nuevos'+(r.sevens?' ('+r.sevens+' de 7 m)':'')+', '+r.tagged+' ya incluidos en otros cortes')}
+$('sensQ7').oninput=e=>{$('sensQ7Val').textContent=e.target.value};
+$('sensQ7').onchange=e=>{S.q7=+e.target.value;saveSettings();runSpikes()};
+$('respike').onclick=()=>runSpikes();
+$('camMode').onchange=e=>{S.cam=e.target.value;saveSettings();if(series.t.length&&!running)runSpikes();else updateCamInfo()};
+$('sensShot').oninput=e=>{$('sensShotVal').textContent=e.target.value};
+$('sensShot').onchange=e=>{S.shot=+e.target.value;saveSettings();runSpikes()};
+
+/* ---------- Reproducción de cortes ---------- */
+function badge(c){const k=ckey(c);return Object.values(SEQ.mark).includes(k)?'⏸ último visto':SEQ.seen[k]?'✓ visto':''}
+function setSeenMark(e,c){const k=ckey(c);e.classList.toggle('seen',!!SEQ.seen[k]);e.classList.toggle('bookmark',Object.values(SEQ.mark).includes(k));const b=e.querySelector('.badge');if(b)b.textContent=badge(c)}
+function markPlaying(){document.querySelectorAll('#candidates .candidate').forEach(e=>{const id=+e.dataset.id,c=candidates.find(x=>x.id===id),pl=id===playingId;e.classList.toggle('playing',pl);if(c)setSeenMark(e,c);if(pl&&e.scrollIntoView)e.scrollIntoView({block:'nearest'})})}
+function stopPlaying(){playing=null;playingId=null;$('clipTag').hidden=true;markPlaying()}
+function playClip(c,queue,idx,seqKey){if(REV){REV=null;$('revBar').hidden=true}
+ playing={c,queue:queue||null,idx:idx||0,seqKey:seqKey||null};playingId=c.id;
+ if(queue&&seqKey){SEQ.mark[seqKey]=ckey(c);SEQ.seen[ckey(c)]=1;saveSeq()}
+ $('clipTag').textContent=displayName(c);$('clipTag').hidden=false;markPlaying();video.currentTime=clipStart(c);video.play()}
+setInterval(()=>{if(!playing||recording||running)return;const c=playing.c,t=video.currentTime;
+ if(playing.review){const w=revWindow(c);if(t>=w[1])video.currentTime=w[0];return}
+ if(t<clipStart(c)-1.5||t>clipEnd(c)+1.5){stopPlaying();return}
+ if(t>=clipEnd(c)){if(playing.queue&&playing.idx<playing.queue.length-1){const nx=playing.idx+1;playClip(playing.queue[nx],playing.queue,nx,playing.seqKey)}else{if(playing.queue&&playing.seqKey){delete SEQ.mark[playing.seqKey];saveSeq();setStatus('Secuencia terminada')}video.pause();stopPlaying()}}},100);
+
+/* ---------- Revisión rápida ---------- */
+let REV=null;
+function revWindow(c){const b=isFinite(c.onset)?c.onset:c.event;return [Math.max(0,b-11),Math.min(video.duration||1e9,b+3)]}
+function startReview(){if(busy()){setStatus('Espera a que termine la tarea en curso');return}
+ const team=$('seqTeam').value,q=clipsForTeam(team).filter(c=>c.status==='pending').sort((a,b)=>a.event-b.event);
+ if(!q.length){setStatus('No hay cortes pendientes de '+teamWord(team)+' (los validados y descartados no se repasan)');return}
+ REV={queue:q,idx:0,ok:0,no:0};revGo(0)}
+function revGo(i){if(!REV)return;if(i<0)i=0;if(i>=REV.queue.length){endReview('Revisión terminada: '+REV.ok+' validados, '+REV.no+' descartados');return}
+ REV.idx=i;const c=REV.queue[i];playing={c,queue:null,idx:0,seqKey:null,review:true};playingId=c.id;
+ $('clipTag').textContent=displayName(c);$('clipTag').hidden=false;$('revBar').hidden=false;$('revInfo').textContent='Revisión '+(i+1)+' de '+REV.queue.length+' · ✓ '+REV.ok+' · ✗ '+REV.no;
+ markPlaying();video.currentTime=revWindow(c)[0];video.play()}
+function endReview(msg){const r=REV;REV=null;$('revBar').hidden=true;video.pause();stopPlaying();if(msg)setStatus(msg);saveLearning();renderCandidates()}
+function revAct(k){if(!REV)return;const c=REV.queue[REV.idx],t=video.currentTime;
+ if(k==='s'||k==='7'){c.mStart=Math.max(0,t-S.markPre);c.mEnd=Math.min(video.duration||1e9,t+S.markPost);c.status='accepted';
+  if(k==='7'){c.cat='siete';c.catSrc='manual'}else if(c.cat==='siete'&&c.catSrc!=='manual')c.cat='lanzamiento';
+  addTraining(c);learnTiming(c);REV.ok++;revGo(REV.idx+1)}
+ else if(k==='v'){c.status='accepted';addTraining(c);learnTiming(c);REV.ok++;revGo(REV.idx+1)}
+ else if(k==='n'){c.status='rejected';addTraining(c);REV.no++;revGo(REV.idx+1)}
+ else if(k==='j')revGo(REV.idx+1);else if(k==='b')revGo(REV.idx-1);else if(k==='x'){endReview('Revisión detenida: '+REV.ok+' validados, '+REV.no+' descartados');return}
+ scheduleRender()}
+$('revStart').onclick=startReview;
+$('revBar').onclick=e=>{const b=e.target.closest&&e.target.closest('button[data-r]');if(b)revAct(b.dataset.r)};
+function clipsForTeam(team){const q=orderedClips();return team==='A'||team==='B'?q.filter(c=>c.team===team):q}
+function teamWord(t){return t==='both'?'ambos equipos':S.teams[t].name}
+function startSeq(fromStart){if(busy()){setStatus('Espera a que termine la tarea en curso');return}
+ const team=$('seqTeam').value,q=clipsForTeam(team);
+ if(!q.length){setStatus('No hay cortes de '+teamWord(team)+' que reproducir con los filtros actuales');return}
+ let i=0;
+ if(fromStart){delete SEQ.mark[team];q.forEach(c=>{delete SEQ.seen[ckey(c)]});saveSeq()}
+ else if(SEQ.mark[team]!=null){const j=q.findIndex(c=>ckey(c)===SEQ.mark[team]);if(j>=0)i=j}
+ playClip(q[i],q,i,team);
+ setStatus(i>0?'Continuando desde el último visto: «'+displayName(q[i])+'» ('+(i+1)+' de '+q.length+' · '+teamWord(team)+')':'Secuencia de '+teamWord(team)+': '+q.length+' cortes')}
+$('playAll').onclick=()=>startSeq(false);
+$('seqReset').onclick=()=>startSeq(true);
+$('seqTeam').onchange=e=>{S.seqTeam=e.target.value;saveSettings();applyView();if(S.view==='team')renderCandidates()};
+$('dlTeam').onchange=e=>{S.dlTeam=e.target.value;saveSettings()};
+$('nameCorner').onchange=e=>{S.nameCorner=e.target.value;saveSettings()};
+
+/* ---------- Guardar la secuencia completa en un único vídeo (grabación en tiempo real) ---------- */
+function drawTag(g,W,H,text,corner){if(!text||corner==='none')return;
+ const fs=Math.max(16,Math.round(H*0.045));g.font='600 '+fs+'px system-ui,-apple-system,"Segoe UI",sans-serif';g.textBaseline='middle';
+ const pad=Math.round(fs*0.5),m=Math.round(fs*0.6),tw=Math.min(W-2*(pad+m),g.measureText(text).width),bw=tw+2*pad,bh=Math.round(fs*1.6),
+  x=corner[1]==='r'?W-bw-m:m,y=corner[0]==='b'?H-bh-m:m,r=8;
+ g.fillStyle='rgba(0,0,0,.62)';g.beginPath();g.moveTo(x+r,y);g.arcTo(x+bw,y,x+bw,y+bh,r);g.arcTo(x+bw,y+bh,x,y+bh,r);g.arcTo(x,y+bh,x,y,r);g.arcTo(x,y,x+bw,y,r);g.closePath();g.fill();
+ g.fillStyle='#fff';g.fillText(text,x+pad,y+bh/2+1,tw)}
+async function recordSequence(list){
+ if(busy())return;
+ if(!list.length){setStatus('No hay cortes que guardar con los filtros actuales');return}
+ if(!window.MediaRecorder||!video.videoWidth){setStatus('Este navegador no permite grabar el vídeo (usa Chrome, Edge o Brave) o aún no hay vídeo cargado');return}
+ recording=true;stop.disabled=false;analyze.disabled=true;playing=null;$('clipTag').hidden=true;const prevRate=video.playbackRate;video.playbackRate=1;
+ const corner=$('nameCorner').value,W=Math.min(video.videoWidth,1280),H=Math.round(video.videoHeight*W/video.videoWidth),cv=document.createElement('canvas');cv.width=W;cv.height=H;
+ const g=cv.getContext('2d');let curName='',drawing=false,raf=0,rec=null,stream=null,done=0;
+ const draw=()=>{if(drawing){g.drawImage(video,0,0,W,H);drawTag(g,W,H,curName,corner)}raf=requestAnimationFrame(draw)};
+ try{
+  const cap=video.captureStream||video.mozCaptureStream;let audio=[];if(AUD){try{audio=AUD.rec.stream.getAudioTracks()}catch(e){}}else if(cap){try{audio=cap.call(video).getAudioTracks()}catch(e){}}
+  stream=new MediaStream(cv.captureStream(30).getVideoTracks().concat(audio));
+  const mime=['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4','video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'].find(m=>MediaRecorder.isTypeSupported(m))||'',
+   ext=mime.indexOf('video/mp4')===0?'mp4':'webm',chunks=[];
+  rec=new MediaRecorder(stream,Object.assign(mime?{mimeType:mime}:{},{videoBitsPerSecond:6e6}));
+  rec.ondataavailable=e=>{if(e.data&&e.data.size)chunks.push(e.data)};
+  const stopped=new Promise(r=>rec.onstop=r);
+  draw();await seekTo(clipStart(list[0]));g.drawImage(video,0,0,W,H);rec.start(1000);
+  for(let i=0;i<list.length&&recording;i++){const c=list[i];
+   setStatus('Guardando la secuencia: corte '+(i+1)+' de '+list.length+' · '+displayName(c)+' (en tiempo real; no cambies de pestaña)');
+   if(i>0){drawing=false;await seekTo(clipStart(c))}
+   curName=displayName(c);drawing=true;await video.play();
+   const endT=clipEnd(c);
+   await new Promise(res=>{const iv=setInterval(()=>{if(!recording||video.currentTime>=endT||video.ended){clearInterval(iv);res()}},60)});
+   video.pause();done=i+1}
+  drawing=false;await new Promise(r=>setTimeout(r,300));cancelAnimationFrame(raf);
+  if(rec.state!=='inactive')rec.stop();await stopped;stream.getTracks().forEach(t=>t.stop());
+  if(chunks.length){const partial=done<list.length,nm='autocut_'+safeName(list.length===1?displayName(list[0]):teamWord($('dlTeam').value))+'_'+(partial?done+'de'+list.length:list.length)+'cortes.'+ext;
+   downloadBlob(new Blob(chunks,{type:(mime||'video/webm').split(';')[0]}),nm);
+   setStatus(partial?'Guardado hasta el corte '+done+' de '+list.length+': '+nm:'Secuencia guardada ('+list.length+' cortes en un solo vídeo): '+nm)}
+  else setStatus('No se grabó nada')}
+ catch(err){cancelAnimationFrame(raf);try{if(rec&&rec.state!=='inactive')rec.stop()}catch(e){}setStatus('No se pudo grabar: '+err.message)}
+ video.playbackRate=prevRate;recording=false;stop.disabled=true;analyze.disabled=!video.duration}
+function recordClips(list){return recordSequence(list)}
+$('dlAll').onclick=()=>{const t=$('dlTeam').value,q=clipsForTeam(t);if(!q.length){setStatus('No hay cortes de '+teamWord(t)+' que guardar con los filtros actuales');return}recordSequence(q)};
+
+/* ---------- Exportar ---------- */
+$('csv').onclick=()=>{const tsel=$('dlTeam').value,q=clipsForTeam(tsel);if(!q.length){setStatus('No hay cortes que exportar con los filtros actuales');return}
+ const rows=[['N','Nombre','Categoría','Equipo','Inicio (s)','Fin (s)','Inicio','Fin','Estado']];
+ q.forEach(c=>{const s=clipStart(c),e=clipEnd(c);rows.push([q.indexOf(c)+1,displayName(c),catName(c),teamLabel(c)||'Sin equipo',s.toFixed(1),e.toFixed(1),fmt(s),fmt(e),c.status==='accepted'?'validado':'pendiente'])});
+ const csv='\ufeff'+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(';')).join('\r\n');
+ downloadBlob(new Blob([csv],{type:'text/csv;charset=utf-8'}),'autocut_cortes'+(tsel!=='both'?'_'+safeName(S.teams[tsel].name):'')+'.csv')};
+function packSeries(){const r=(a,k)=>a.map(v=>Math.round(v*k)/k);return {step:0.2,gs:series.gs,useTeams:series.useTeams,sc:r(series.sc,1e5),zl:r(series.zl,1e5),zr:r(series.zr,1e5),cx:r(series.cx,1e3),ma:series.ma,mb:series.mb,mall:series.mall}}
+function unpackSeries(s){const n=s.sc.length,pad=a=>{a=Array.isArray(a)?a.slice(0,n):[];while(a.length<n)a.push(0);return a};
+ series=newSeries();series.t=Array.from({length:n},(_,i)=>i*0.2);series.sc=s.sc.slice();series.zl=pad(s.zl);series.zr=pad(s.zr);series.cx=Array.isArray(s.cx)&&s.cx.length===n?s.cx.slice():series.sc.map(()=>.5);
+ series.ma=pad(s.ma);series.mb=pad(s.mb);series.mall=pad(s.mall);series.gs=s.gs||0;series.useTeams=!!s.useTeams}
+function buildLearning(full){return {updated:new Date().toISOString(),video:videoName,settings:S,
+ candidates:candidates.map(c=>({event:c.event,onset:c.onset,type:catName(c),confidence:c.confidence,status:c.status,name:displayName(c),category:c.cat,categorySource:c.catSrc,team:c.team,teamShare:c.teamShare,start:clipStart(c),end:clipEnd(c),manualStart:c.mStart,manualEnd:c.mEnd,kind:c.kind||'burst',features:c.f,ball:c.ball})),
+ training:TRAIN,timing:TIMING,seq:SEQ,audio:full&&AUDIO?AUDIO:undefined,series:full&&series.t.length?packSeries():undefined}}
+function saveLearning(){try{localStorage.setItem('autocut-learning-v1',JSON.stringify(buildLearning()))}catch(e){}}
+$('export').onclick=()=>{const full=series.t.length>0;downloadBlob(new Blob([JSON.stringify(buildLearning(true),null,full?0:1)],{type:'application/json'}),'autocut_aprendizaje.json');setStatus(full?'Exportado con el análisis completo: al importarlo con el mismo vídeo cargado se restauran los cortes y no hace falta volver a analizar':'Exportado (sin análisis de vídeo)')};
+$('import').onclick=()=>$('importFile').click();
+function mergeImport(d){
+ const inc=Array.isArray(d.training)?d.training.filter(t=>t&&t.f&&t.cat):[],keys=new Set(TRAIN.map(t=>t.key));let add=0,addT=0;
+ inc.forEach(t=>{if(!keys.has(t.key)){TRAIN.push({key:t.key,f:t.f,cat:t.cat,kind:t.kind||'burst'});keys.add(t.key);add++}});
+ while(TRAIN.length>500)TRAIN.shift();saveTrain();
+ const tk=new Set(TIMING.map(t=>t.k));
+ (Array.isArray(d.timing)?d.timing:[]).forEach(t=>{if(t&&t.k&&!tk.has(t.k)){TIMING.push({k:t.k,s:t.s==null?null:t.s,e:t.e==null?null:t.e});tk.add(t.k);addT++}});
+ (Array.isArray(d.candidates)?d.candidates:[]).forEach(c=>{if(c.status!=='accepted'||(c.manualStart==null&&c.manualEnd==null))return;const k=(d.video||'')+'@'+Math.round(c.event);if(tk.has(k)){const ex=TIMING.find(t=>t.k===k);if(ex&&ex.so==null&&ex.eo==null&&c.onset!=null){ex.so=c.manualStart!=null?c.manualStart-c.onset:null;ex.eo=c.manualEnd!=null?c.manualEnd-c.onset:null}return}
+  TIMING.push({k,s:c.manualStart!=null?c.manualStart-c.event:null,e:c.manualEnd!=null?c.manualEnd-c.event:null,so:c.onset!=null&&c.manualStart!=null?c.manualStart-c.onset:null,eo:c.onset!=null&&c.manualEnd!=null?c.manualEnd-c.onset:null});tk.add(k);addT++});
+ while(TIMING.length>200)TIMING.shift();saveTiming();refreshLW();updateTimingInfo();
+ let restored=0,seriesRestored=false,skipped='';
+ const hasCuts=Array.isArray(d.candidates)&&d.candidates.length>0,norm=s=>String(s||'').normalize('NFC').trim().toLowerCase(),sameVideo=!!(d.video&&videoName&&norm(d.video)===norm(videoName));
+ if((hasCuts||d.series)&&!sameVideo)skipped=videoName?'este archivo es de otro vídeo ('+(d.video||'sin nombre')+'): solo se importó el aprendizaje':'carga primero el vídeo para restaurar también los cortes';
+ else if(sameVideo&&!running){
+  if(d.seq&&d.seq.seen){Object.assign(SEQ.seen,d.seq.seen);for(const k in (d.seq.mark||{}))if(SEQ.mark[k]==null)SEQ.mark[k]=d.seq.mark[k];saveSeq()}
+  if(d.series&&Array.isArray(d.series.sc)&&d.series.sc.length&&!series.t.length){unpackSeries(d.series);seriesRestored=true}
+  if(hasCuts&&!candidates.length){
+   d.candidates.forEach(c=>{const ev=c.event,f=c.features||{};
+    const cat0=(c.category==='siete'&&c.categorySource==='auto'&&!S.auto7)?'lanzamiento':(c.category||'lanzamiento');
+    const nc={id:++uid,onset:c.onset!=null?c.onset:ev-2,burstEnd:c.onset!=null?ev+2:ev,event:ev,score:f.score||0,confidence:c.confidence||50,f,cat:cat0,catSrc:c.categorySource||'auto',
+     team:c.team||'?',teamShare:c.teamShare!=null?c.teamShare:.5,teamOk:false,teamSingle:null,teamManual:true,restored:true,ball:c.ball,customName:null,mStart:c.manualStart!=null?c.manualStart:null,mEnd:c.manualEnd!=null?c.manualEnd:null,status:c.status||'pending',kind:c.kind||'burst'};
+    if(c.name&&c.name!==autoName(nc))nc.customName=c.name;candidates.push(nc)});
+   candidates.sort((p,q)=>p.event-q.event);restored=candidates.length}
+  if(series.t.length){updatePost();syncTrain()}
+  if(d.audio&&Array.isArray(d.audio.rms)&&d.audio.rms.length&&!AUDIO)AUDIO=d.audio;
+  if(AUDIO)applyAudioFeatures()}
+ return {add,addT,restored,seriesRestored,skipped}}
+$('importFile').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+ try{const r=mergeImport(JSON.parse(await f.text()));updateCamInfo();renderCandidates();saveLearning();
+  setStatus(r.add+' ejemplos y '+r.addT+' ajustes de ventana importados'+(r.restored?' · '+r.restored+' cortes restaurados':'')+(r.seriesRestored?' · análisis restaurado (puedes usar los deslizadores sin volver a analizar)':'')+(r.skipped?' · '+r.skipped:'')+(!r.restored&&!r.skipped?' · para ver cortes pulsa «Analizar vídeo»':''))}
+ catch(err){setStatus('No se pudo leer el archivo de aprendizaje')}};
+let storeOk=true;try{localStorage.setItem('autocut-test','1');localStorage.removeItem('autocut-test')}catch(e){storeOk=false}
+if(!storeOk)$('storeWarn').hidden=false;
+
+/* ---------- Lista de cortes y línea de tiempo ---------- */
+function teamColor(c){const k=c.team==='A'||c.team==='B'?S.teams[c.team].color:null;return k?'rgb('+k.join(',')+')':'var(--warn)'}
+function renderTimeline(){const tl=$('timeline');tl.querySelectorAll('.seg,.mark,.wmark').forEach(n=>n.remove());const d=video.duration||1;
+ activeClips().forEach(c=>{const s=clipStart(c),e=clipEnd(c);
+  const seg=document.createElement('div');seg.className='seg';seg.style.left=(s/d*100)+'%';seg.style.width=Math.max(.3,(e-s)/d*100)+'%';seg.style.background=teamColor(c);
+  seg.title=displayName(c)+' · '+fmt(s)+' – '+fmt(e);seg.onclick=ev=>{ev.stopPropagation();if(!running&&!recording)playClip(c)};tl.appendChild(seg);
+  const mk=document.createElement('div');mk.className='mark';mk.style.left=(c.event/d*100)+'%';mk.title=displayName(c)+' (pico '+fmt(c.event)+')';mk.onclick=ev=>{ev.stopPropagation();video.currentTime=c.event};tl.appendChild(mk)});
+ if(AUDIO&&S.showWhistle)WHIST.forEach(t=>{const w=document.createElement('div');w.className='wmark';w.style.left=(t/d*100)+'%';w.title='Silbato · '+fmt(t);tl.appendChild(w)});
+ tl.appendChild($('playhead'))}
+function action(c,a){
+ if(a==='ok'){c.status='accepted';addTraining(c);learnTiming(c);setStatus('Candidato validado');saveLearning();renderCandidates();return}
+ if(a==='no'){c.status='rejected';addTraining(c);setStatus('Candidato descartado');saveLearning();renderCandidates();return}
+ if(running||recording){setStatus('Espera a que termine la tarea en curso o pulsa Detener');return}
+ if(a==='go'){playClip(c);return}
+ if(a==='dl'){recordClips([c]);return}
+ const s=clipStart(c),e=clipEnd(c),d=video.duration||1e9;
+ if(a==='reset'){c.mStart=null;c.mEnd=null}
+ else if(a[0]==='s'){const v=a==='s0'?video.currentTime:s+(a==='s+'?1:-1);c.mStart=Math.max(0,Math.min(v,e-1))}
+ else if(a[0]==='e'){const v=a==='e0'?video.currentTime:e+(a==='e+'?1:-1);c.mEnd=Math.min(d,Math.max(v,s+1))}
+ learnTiming(c);saveLearning();renderCandidates();
+ if(a[0]==='e')seekTo(Math.max(clipStart(c),clipEnd(c)-2));else seekTo(clipStart(c))}
+function cardFor(c){
+ const el=document.createElement('div');el.className='candidate'+(c.id===playingId?' playing':'');el.dataset.id=c.id;
+ if(c.status==='accepted')el.style.borderColor='var(--good)';
+ if(c.status==='rejected')el.style.opacity=.45;
+ el.innerHTML=`<div class="top"><input class="name" type="text" spellcheck="false" title="Haz clic para editar el nombre del corte"><span class="badge"></span><b>${c.confidence}%</b></div><div class="meta"></div><div class="pick"><select class="cat" title="Categoría"></select><select class="tm" title="Equipo"></select></div><div class="confidence"><i style="width:${c.confidence}%"></i></div><div class="actions"><button data-a="go">▶ Ver</button><button data-a="ok" class="good">Validar</button><button data-a="no" class="danger">Descartar</button><button data-a="dl" title="Descargar este corte (se graba en tiempo real)">⬇</button></div><div class="adj"><span>Inicio</span><button data-a="s-">−1 s</button><button data-a="s+">+1 s</button><button data-a="s0" title="Fija el inicio en la posición actual del vídeo">= ahora</button></div><div class="adj"><span>Fin</span><button data-a="e-">−1 s</button><button data-a="e+">+1 s</button><button data-a="e0" title="Fija el fin en la posición actual del vídeo">= ahora</button><button data-a="reset" title="Volver a la ventana automática">↺</button></div>`;
+ const inp=el.querySelector('.name');inp.value=displayName(c);
+ inp.placeholder='Nº o nombre de la jugadora';inp.onfocus=()=>inp.select();inp.onkeydown=e=>{if(e.key==='Enter')inp.blur()};
+ inp.onchange=()=>{const v=inp.value.trim();c.customName=(v&&v!==autoName(c))?v:null;inp.value=displayName(c);saveLearning();renderTimeline();if(S.view==='team')renderCandidates()};
+ el.querySelector('.meta').textContent=fmt(clipStart(c))+' → '+fmt(clipEnd(c))+' · '+Math.round(clipEnd(c)-clipStart(c))+' s · pico '+fmt(c.event)+' · '+(c.catSrc==='manual'?'categoría manual':c.catSrc==='aprendido'?'categoría aprendida':'categoría automática')+(c.kind==='spike'?' · pico junto a la portería':'')+(relP(c)!==undefined?' · prob. de acción real '+Math.round(relP(c)*100)+' %'+(isDoubt(c)?' (dudoso)':''):'')+(c.f&&c.f.gap!==undefined&&c.f.sp!==undefined?' · '+(c.f.gap>=99?'sin ráfaga previa':Math.round(c.f.gap)+' s desde la ráfaga anterior'):'')+(c.f&&c.f.aw!==undefined?' · audio: '+(c.f.awn>0?'silbato cerca, ':'sin silbato, ')+'ambiente '+(c.f.ac>=0?'+':'')+c.f.ac.toFixed(1)+' dB':'')+(c.f&&c.f.bn!==undefined?' · balón visto '+Math.round(c.f.bn*100)+' %':'');
+ const sc=el.querySelector('.cat');S.cats.forEach(k=>sc.add(new Option(k.name,k.id)));if(!S.cats.some(k=>k.id===c.cat))sc.add(new Option(c.cat,c.cat));sc.value=c.cat;
+ sc.onchange=()=>{c.cat=sc.value;c.catSrc='manual';addTraining(c);saveLearning();renderCandidates()};
+ const st=el.querySelector('.tm');st.add(new Option(S.teams.A.name,'A'));st.add(new Option(S.teams.B.name,'B'));st.add(new Option('Sin equipo','?'));st.value=c.team;
+ st.onchange=()=>{c.team=st.value;c.teamManual=true;saveLearning();renderCandidates()};
+ el.querySelectorAll('button[data-a]').forEach(b=>b.onclick=()=>action(c,b.dataset.a));
+ setSeenMark(el,c);return el}
+function updateDiag(){const el=$('diag');if(!candidates.length){el.textContent='';return}
+ const dud=candidates.filter(isDoubt).length,vis=candidates.filter(isVisible).length,byCat=candidates.filter(c=>{const k=S.cats.find(k=>k.id===c.cat);return k&&!k.enabled}).length,unk=candidates.filter(c=>c.team==='?').length;
+ el.textContent=candidates.length+' propuestas · '+vis+' visibles · '+byCat+' ocultas por categoría · '+unk+' sin equipo'+(unk&&!S.showUnk?' (ocultas)':'')+(dud?' · '+dud+' dudosos'+(S.showDoubt?'':' (ocultos)'):'')+(S.teamFilter!=='both'?' · equipo a cortar: '+S.teams[S.teamFilter].name:'')}
+function renderCandidates(){const box=$('candidates');box.innerHTML='';updateDoubtState();updateDoubtInfo();renderCats();refreshTeamFilter();updateDiag();renderTimeline();
+ if(!candidates.length){$('count').textContent='';box.innerHTML='<div class="empty">Todavía no hay candidatos.</div>';return}
+ const vis=candidates.filter(isVisible);$('count').textContent='· '+vis.length+' de '+candidates.length;
+ if(!vis.length){const byCat=candidates.filter(c=>{const k=S.cats.find(k=>k.id===c.cat);return k&&!k.enabled}).length,noTeam=candidates.filter(c=>c.team==='?').length;
+  const d=document.createElement('div');d.className='empty';
+  d.textContent='Ningún corte cumple los filtros actuales ('+candidates.length+' propuestos: '+byCat+' ocultos por categoría, '+noTeam+' sin equipo claro; equipo a cortar: '+(S.teamFilter==='both'?'ambos':S.teams[S.teamFilter].name)+').';
+  const b=document.createElement('button');b.textContent='Quitar filtros';b.style.marginTop='8px';b.onclick=resetFilters;d.appendChild(document.createElement('br'));d.appendChild(b);box.appendChild(d);return}
+ if(S.view==='team'){const g=teamGroups(),wrap=document.createElement('div');wrap.className='teamCols'+(shownTeams().length===1?' one':'');
+  shownTeams().forEach(k=>{const col=document.createElement('div');col.className='teamCol';const t=S.teams[k],h3=document.createElement('h3'),sw=document.createElement('span');
+   sw.className='sw';sw.style.cssText='display:inline-block;vertical-align:middle;width:14px;height:14px;margin-right:6px;background:'+(t.color?'rgb('+t.color.join(',')+')':'#444');
+   h3.append(sw,document.createTextNode(t.name+' ('+g[k].length+')'));col.appendChild(h3);
+   if(!g[k].length){const e=document.createElement('div');e.className='empty';e.textContent='Sin cortes';col.appendChild(e)}
+   g[k].forEach(c=>col.appendChild(cardFor(c)));wrap.appendChild(col)});
+  box.appendChild(wrap);
+  if(g['?'].length&&shownTeams().length===2){const s=document.createElement('div'),hh=document.createElement('h3');s.className='noTeam';hh.textContent='Sin equipo asignado ('+g['?'].length+') · elige el equipo en cada corte';s.appendChild(hh);g['?'].forEach(c=>s.appendChild(cardFor(c)));box.appendChild(s)}
+  return}
+ vis.forEach(c=>box.appendChild(cardFor(c)))}
+
+/* ---------- Inicio ---------- */
+refreshLab();refreshLW();updateTimingInfo();applyView();fitRel();renderTeams();renderCats();
+$('audioFrom').value=S.audioFrom;$('audioTo').value=S.audioTo;$('showWhistle').checked=S.showWhistle;$('audioRate').value=S.audioRate;$('ballN').value=S.ballN;$('auto7').checked=S.auto7;$('markPre').value=S.markPre;$('markPreVal').textContent=String(S.markPre).replace('.',',')+' s';$('markPost').value=S.markPost;$('markPostVal').textContent=String(S.markPost).replace('.',',')+' s';$('nameCorner').value=S.nameCorner;$('doubt').value=S.doubt;$('doubtVal').textContent=S.doubt;$('showDoubt').checked=S.showDoubt;$('useTiming').checked=S.useTiming;$('camMode').value=S.cam;$('sensQ7').value=S.q7;$('sensQ7Val').textContent=S.q7;$('sensShot').value=S.shot;$('sensShotVal').textContent=S.shot;$('pre').value=S.pre;$('preVal').textContent=S.pre+' s';$('post').value=S.post;$('postVal').textContent=S.post+' s';$('tol').value=S.tol;$('tolVal').textContent=S.tol;
+
+</script>
+</body></html>
